@@ -1,0 +1,25 @@
+Nest.create().add(file).add(dir).pack();
+
+Nest.create().add(file).under(nestLocation).add(dir).pack();
+Nest.create().add(file).underAlias(nestAlias).add(dir).pack();
+Nest.create().add(file).under(nestAlias, path).add(dir).pack();
+
+Nest.create().add(file).unpackTo(targetLocation).add(dir).pack();
+Nest.create().add(file).unpackToAlias(targetAlias).add(dir).pack();
+Nest.create().add(file).unpack(targetAlias, path).add(dir).pack();
+
+Nest.create().add(file).under(nestLocation).unpackTo(targetLocation).add(dir).pack();
+
+Nest.create().defineUnderAlias(name, path)
+Nest.create().defineUnderAlias(name, underAlias, path)
+
+Nest.create().defineUnpackToAlias(name)
+Nest.create().defineUnpackToAlias(name, path)
+Nest.create().defineUnpackToAlias(name, unpackToAlias, path)
+
+
+Nest.open(path).unpack();
+
+Nest.open(path).defineUnpackToAlias(name, path).defineUnpackToAlias(name, unpackToAlias, path).unpack();
+
+Nest.open(path).defineUnpackToAlias(name, path).defineUnpackToAlias(name, unpackToAlias, path).unpack(defaultRoot);
