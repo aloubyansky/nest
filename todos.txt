@@ -1,0 +1,2 @@
+- provision for special entries in the zip format
+- for WF distro we use file permissions set in https://github.com/wildfly/wildfly/blob/master/feature-pack/feature-pack-build.xml

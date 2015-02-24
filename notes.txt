@@ -1,25 +1,50 @@
+// create a package containing content at specified absolute paths
 Nest.create().add(file).add(dir).pack();
 
-Nest.create().add(file).under(nestLocation).add(dir).pack();
-Nest.create().add(file).underAlias(nestAlias).add(dir).pack();
-Nest.create().add(file).under(nestAlias, path).add(dir).pack();
 
-Nest.create().add(file).unpackTo(targetLocation).add(dir).pack();
-Nest.create().add(file).unpackToAlias(targetAlias).add(dir).pack();
-Nest.create().add(file).unpack(targetAlias, path).add(dir).pack();
-
-Nest.create().add(file).under(nestLocation).unpackTo(targetLocation).add(dir).pack();
-
-Nest.create().defineUnderAlias(name, path)
-Nest.create().defineUnderAlias(name, underAlias, path)
-
-Nest.create().defineUnpackToAlias(name)
-Nest.create().defineUnpackToAlias(name, path)
-Nest.create().defineUnpackToAlias(name, unpackToAlias, path)
+// define aliases for paths that later will be used as relative-to paths
+Nest.create()
+.defineSourceAlias(name, path)
+.defineSourceAlias(name, sourceAlias, path) // define alias for a path relative an existing alias
+.add(srcAlias, relativePath)
+.add(absolutePath)
+.pack();
 
 
-Nest.open(path).unpack();
+// if relevant for the packaging format, specify the location under which the entry should be stored inside the package
+Nest.create()
+.add(file).under(nestLocation)
+.add(dir)
+.pack();
 
-Nest.open(path).defineUnpackToAlias(name, path).defineUnpackToAlias(name, unpackToAlias, path).unpack();
 
+// define aliases for paths inside the package
+Nest.create()
+.defineUnderAlias(name, path)
+.defineUnderAlias(name, underAlias, path) // alias for a path relative ab existing alias
+.add(file).underAlias(nestAlias) // store file under specified alias
+.add(file).under(nestAlias, path) // store file under path relative to an alias
+.pack();
+
+
+// specifying where to unpack
+Nest.create()
+.defineUnpackToAlias(name)
+.defineUnpackToAlias(name, unpackToAlias, path)  // alias for a path relative to existing alias
+.add(file).unpackTo(alias)  // unpack under the alias
+.add(file).unpack(targetAlias, path)  // unpack under path relative to an alias
+.pack();
+
+
+// Unpacking
+
+Nest.open(path).unpack();  // in case target aliases where not specified
+
+// defining required aliases
+Nest.open(path)
+.defineUnpackToAlias(name, path)
+.defineUnpackToAlias(name, unpackToAlias, path)
+.unpack();
+
+// default root
 Nest.open(path).defineUnpackToAlias(name, path).defineUnpackToAlias(name, unpackToAlias, path).unpack(defaultRoot);
