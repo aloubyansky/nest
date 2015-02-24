@@ -22,7 +22,8 @@
 
 package org.wildfly.nest.pack;
 
-import java.io.InputStream;
+import org.wildfly.nest.EntryLocation;
+import org.wildfly.nest.NestEntry;
 
 /**
  * @author Alexey Loubyansky
@@ -30,5 +31,17 @@ import java.io.InputStream;
  */
 public interface EntrySource {
 
-    InputStream getInputStream();
+    /**
+     * The entry as it will appear in the nest
+     *
+     * @return  the entry as it will appear in the nest
+     */
+    NestEntry getNestEntry();
+
+    /**
+     * Location of the entry to be added to the nest.
+     *
+     * @return  location of the entry to be added to the nest
+     */
+    EntryLocation getSourceLocation();
 }

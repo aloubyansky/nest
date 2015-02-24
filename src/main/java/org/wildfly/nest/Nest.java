@@ -22,17 +22,15 @@
 
 package org.wildfly.nest;
 
+import org.wildfly.nest.pack.PackingNestBuilder;
+
 /**
- * Represents an entry (file or directory) in a package.
  *
  * @author Alexey Loubyansky
  */
-public interface PackedEntry {
+public class Nest {
 
-    /**
-     * Returns the target location the entry should be unpacked to.
-     *
-     * @return  target location the entry should be unpacked to
-     */
-    TargetLocation getTargetLocation();
+    public static PackingNestBuilder create() {
+        return PackingNestBuilder.FACTORY.create();
+    }
 }
