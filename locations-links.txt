@@ -1,0 +1,32 @@
+// defining source locations and linking them to the actual paths
+
+Nest.create()
+.nameSourceLocation(name) // named source location
+.nameSourceLocation(name, relativeToSourceLocationName, path) // named source location with the path relative to the existing named source location
+...
+.linkSourceLocation(name, path) // links a name (existing or not yet) to an actual source path
+
+
+// defining nest locations
+
+Nest.create()
+.nameNestLocation(name, path) // names a path inside the package
+.nameNestLocation(name, relativeToNestLocationName, path) // names a path inside the package relative to an existing named nest location
+
+
+// linking nest locations to target(unpack) locations
+
+.linkNestLocation(nestLocationName, targetPath)
+
+// link nest location name to unpack location name
+.linkNestToUnpackLocation(nestLocation, unpackLocation)
+.linkNestToUnpackLocation(nestLocation, relativeToUnpackLocation, path)
+
+
+// defining target(unpack/expand) locations
+
+Nest.create()
+.nameUnpackLocation(name)  // named unpack location
+.nameUnpackLocation(name, relativeToUnpackLocationName, path)  // named unpack location relative to the previously defined unpack location
+...
+.linkUnpackLocation(name, path)  // links an unpack name (already defined or not yet) to an actual target path

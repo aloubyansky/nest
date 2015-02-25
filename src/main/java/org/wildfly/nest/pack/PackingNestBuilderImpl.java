@@ -44,57 +44,45 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
     private final EntryUnpackToBuilder unpackToBuilder = new EntryUnpackToBuilderImpl();
     private final EntryUnderBuilder underBuilder = new EntryUnderBuilderImpl();
 
-    /* (non-Javadoc)
-     * @see org.wildfly.nest.Nest.NestBuilder#defineSourceAlias(java.lang.String, java.lang.String)
-     */
     @Override
-    public PackingNestBuilder defineSourceAlias(String name, String path) {
-        addSourceLocation(EntryLocation.alias(name, path));
+    public PackingNestBuilder nameSourceLocation(String name) {
+        addSourceLocation(EntryLocation.name(name));
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.wildfly.nest.Nest.NestBuilder#defineSourceAlias(java.lang.String, java.lang.String, java.lang.String)
-     */
     @Override
-    public PackingNestBuilder defineSourceAlias(String name, String relativeToAlias, String path) {
-        addSourceLocation(EntryLocation.alias(name, relativeToAlias, path));
+    public PackingNestBuilder nameSourceLocation(String name, String locationName, String path) {
+        addSourceLocation(EntryLocation.name(name, locationName, path));
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.wildfly.nest.Nest.NestBuilder#defineUnderAlias(java.lang.String, java.lang.String)
-     */
     @Override
-    public PackingNestBuilder defineUnderAlias(String name, String path) {
-        addNestLocation(EntryLocation.alias(name, path));
+    public PackingNestBuilder linkSourceLocation(String name, String path) {
+        addSourceLocation(EntryLocation.name(name, path));
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.wildfly.nest.Nest.NestBuilder#defineUnderAlias(java.lang.String, java.lang.String, java.lang.String)
-     */
     @Override
-    public PackingNestBuilder defineUnderAlias(String name, String relativeToAlias, String path) {
-        addNestLocation(EntryLocation.alias(name, relativeToAlias, path));
+    public PackingNestBuilder nameNestLocation(String name, String path) {
+        addNestLocation(EntryLocation.name(name, path));
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.wildfly.nest.Nest.NestBuilder#defineUnpackToAlias(java.lang.String)
-     */
     @Override
-    public PackingNestBuilder defineUnpackToAlias(String name) {
-        addTargetLocation(EntryLocation.alias(name));
+    public PackingNestBuilder nameNestLocation(String name, String locationName, String path) {
+        addNestLocation(EntryLocation.name(name, locationName, path));
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.wildfly.nest.Nest.NestBuilder#defineUnpackToAlias(java.lang.String, java.lang.String, java.lang.String)
-     */
     @Override
-    public PackingNestBuilder defineUnpackToAlias(String name, String relativeToAlias, String path) {
-        addTargetLocation(EntryLocation.alias(name, relativeToAlias, path));
+    public PackingNestBuilder nameUnpackLocation(String name) {
+        addTargetLocation(EntryLocation.name(name));
+        return this;
+    }
+
+    @Override
+    public PackingNestBuilder nameUnpackLocation(String name, String locationName, String path) {
+        addTargetLocation(EntryLocation.name(name, locationName, path));
         return this;
     }
 
@@ -105,7 +93,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
     }
 
     @Override
-    public EntryUnderBuilder add(String srcAlias, String relativePath) {
+    public EntryUnderBuilder addLocation(String srcLocation, String relativePath) {
         // TODO Auto-generated method stub
         return underBuilder;
     }
@@ -113,49 +101,49 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
     private void addSourceLocation(EntryLocation el) {
         switch(sourceLocations.size()) {
             case 0:
-                sourceLocations = Collections.<String, EntryLocation>singletonMap(el.getAlias(), el);
+                sourceLocations = Collections.<String, EntryLocation>singletonMap(el.getName(), el);
                 break;
             case 1:
                 sourceLocations = new HashMap<String, EntryLocation>(sourceLocations);
             default:
-                sourceLocations.put(el.getAlias(), el);
+                sourceLocations.put(el.getName(), el);
         }
     }
 
     private void addNestLocation(EntryLocation el) {
         switch(nestLocations.size()) {
             case 0:
-                nestLocations = Collections.<String, EntryLocation>singletonMap(el.getAlias(), el);
+                nestLocations = Collections.<String, EntryLocation>singletonMap(el.getName(), el);
                 break;
             case 1:
                 nestLocations = new HashMap<String, EntryLocation>(nestLocations);
             default:
-                nestLocations.put(el.getAlias(), el);
+                nestLocations.put(el.getName(), el);
         }
     }
 
     private void addTargetLocation(EntryLocation el) {
         switch(targetLocations.size()) {
             case 0:
-                targetLocations = Collections.<String, EntryLocation>singletonMap(el.getAlias(), el);
+                targetLocations = Collections.<String, EntryLocation>singletonMap(el.getName(), el);
                 break;
             case 1:
                 targetLocations = new HashMap<String, EntryLocation>(targetLocations);
             default:
-                targetLocations.put(el.getAlias(), el);
+                targetLocations.put(el.getName(), el);
         }
     }
 
     class EntryUnpackToBuilderImpl extends DelegatingPackingNestBuilder implements EntryUnpackToBuilder {
 
         @Override
-        public PackingNestBuilder unpackTo(String targetAlias) {
+        public PackingNestBuilder unpackToLocation(String unpackLocation) {
             // TODO Auto-generated method stub
             return PackingNestBuilderImpl.this;
         }
 
         @Override
-        public PackingNestBuilder unpackTo(String targetAlias, String relativePath) {
+        public PackingNestBuilder unpackToLocation(String unpackLocation, String relativePath) {
             // TODO Auto-generated method stub
             return PackingNestBuilderImpl.this;
         }
@@ -170,13 +158,13 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         }
 
         @Override
-        public EntryUnpackToBuilder underAlias(String nestAlias) {
+        public EntryUnpackToBuilder underLocation(String nestLocation) {
             // TODO Auto-generated method stub
             return unpackToBuilder;
         }
 
         @Override
-        public EntryUnpackToBuilder under(String nestAlias, String relativePath) {
+        public EntryUnpackToBuilder underLocation(String nestLocation, String relativePath) {
             // TODO Auto-generated method stub
             return unpackToBuilder;
         }
@@ -185,34 +173,39 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
     class DelegatingPackingNestBuilder implements PackingNestBuilder {
 
         @Override
-        public PackingNestBuilder defineSourceAlias(String name, String path) {
-            return defineSourceAlias(name, path);
+        public PackingNestBuilder nameSourceLocation(String name) {
+            return nameSourceLocation(name);
         }
 
         @Override
-        public PackingNestBuilder defineSourceAlias(String name, String relativeToAlias, String path) {
-            return defineSourceAlias(name, relativeToAlias, path);
+        public PackingNestBuilder nameSourceLocation(String name, String locationName, String path) {
+            return nameSourceLocation(name, locationName, path);
         }
 
         @Override
-        public PackingNestBuilder defineUnderAlias(String name, String path) {
-            return defineUnderAlias(name, path);
+        public PackingNestBuilder linkSourceLocation(String name, String path) {
+            return linkSourceLocation(name, path);
         }
 
         @Override
-        public PackingNestBuilder defineUnderAlias(String name, String relativeToAlias, String path) {
+        public PackingNestBuilder nameNestLocation(String name, String path) {
+            return nameNestLocation(name, path);
+        }
+
+        @Override
+        public PackingNestBuilder nameNestLocation(String name, String locationName, String path) {
             // TODO Auto-generated method stub
             return null;
         }
 
         @Override
-        public PackingNestBuilder defineUnpackToAlias(String name) {
+        public PackingNestBuilder nameUnpackLocation(String name) {
             // TODO Auto-generated method stub
             return null;
         }
 
         @Override
-        public PackingNestBuilder defineUnpackToAlias(String name, String relativeToAlias, String path) {
+        public PackingNestBuilder nameUnpackLocation(String name, String locationName, String path) {
             // TODO Auto-generated method stub
             return null;
         }
@@ -224,7 +217,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         }
 
         @Override
-        public EntryUnderBuilder add(String srcAlias, String relativePath) {
+        public EntryUnderBuilder addLocation(String locationName, String relativePath) {
             // TODO Auto-generated method stub
             return null;
         }

@@ -32,24 +32,24 @@ package org.wildfly.nest;
  */
 public class EntryLocation {
 
-    private final String alias;
-    private final String relativeTo;
+    private final String name;
+    private final String relativeToName;
     private final String path;
 
     public static EntryLocation path(String path) {
         return new EntryLocation(path);
     }
 
-    public static EntryLocation alias(String alias) {
-        return new EntryLocation(alias, null);
+    public static EntryLocation name(String name) {
+        return new EntryLocation(name, null);
     }
 
-    public static EntryLocation alias(String alias, String path) {
-        return new EntryLocation(alias, path);
+    public static EntryLocation name(String name, String path) {
+        return new EntryLocation(name, path);
     }
 
-    public static EntryLocation alias(String alias, String relativeToAlias, String path) {
-        return new EntryLocation(alias, relativeToAlias, path);
+    public static EntryLocation name(String name, String relativeToName, String path) {
+        return new EntryLocation(name, relativeToName, path);
     }
 
     EntryLocation(String path) {
@@ -57,22 +57,22 @@ public class EntryLocation {
             throw new IllegalArgumentException("path is null");
         }
         this.path = path;
-        alias = null;
-        relativeTo = null;
+        name = null;
+        relativeToName = null;
     }
 
-    EntryLocation(String alias, String path) {
-        if(alias == null) {
-            throw new IllegalArgumentException("alias is null");
+    EntryLocation(String name, String path) {
+        if(name == null) {
+            throw new IllegalArgumentException("name is null");
         }
-        this.alias = alias;
+        this.name = name;
         this.path = path;
-        this.relativeTo = null;
+        this.relativeToName = null;
     }
 
-    EntryLocation(String alias, String relativeTo, String path) {
-        if(alias == null) {
-            throw new IllegalArgumentException("alias is null");
+    EntryLocation(String name, String relativeTo, String path) {
+        if(name == null) {
+            throw new IllegalArgumentException("name is null");
         }
         if(path == null) {
             throw new IllegalArgumentException("path is null");
@@ -80,22 +80,22 @@ public class EntryLocation {
         if(relativeTo == null) {
             throw new IllegalArgumentException("relativeTo is null");
         }
-        this.alias = alias;
+        this.name = name;
         this.path = path;
-        this.relativeTo = relativeTo;
+        this.relativeToName = relativeTo;
     }
 
     /**
-     * Returns the alias which to resolves to a path relative to which
-     * the current target should be resolved.
-     * If the relative-to alias was not specified, the method return null.
+     * Returns the name which resolves to a path relative to which
+     * the current location should be resolved.
+     * If the relative-to name is not specified, the method will return null.
      *
-     * @return  the alias of the location relative to which the current target
+     * @return  the name of the location relative to which the current location
      *          should be resolved or null if the relative location was not
      *          specified
      */
     public String getRelativeTo() {
-        return relativeTo;
+        return relativeToName;
     }
 
     /**
@@ -103,8 +103,8 @@ public class EntryLocation {
      *
      * @return  alias for this location or null if none was provided
      */
-    public String getAlias() {
-        return alias;
+    public String getName() {
+        return name;
     }
 
     /**
@@ -126,9 +126,9 @@ public class EntryLocation {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((alias == null) ? 0 : alias.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((path == null) ? 0 : path.hashCode());
-        result = prime * result + ((relativeTo == null) ? 0 : relativeTo.hashCode());
+        result = prime * result + ((relativeToName == null) ? 0 : relativeToName.hashCode());
         return result;
     }
 
@@ -141,20 +141,20 @@ public class EntryLocation {
         if (getClass() != obj.getClass())
             return false;
         EntryLocation other = (EntryLocation) obj;
-        if (alias == null) {
-            if (other.alias != null)
+        if (name == null) {
+            if (other.name != null)
                 return false;
-        } else if (!alias.equals(other.alias))
+        } else if (!name.equals(other.name))
             return false;
         if (path == null) {
             if (other.path != null)
                 return false;
         } else if (!path.equals(other.path))
             return false;
-        if (relativeTo == null) {
-            if (other.relativeTo != null)
+        if (relativeToName == null) {
+            if (other.relativeToName != null)
                 return false;
-        } else if (!relativeTo.equals(other.relativeTo))
+        } else if (!relativeToName.equals(other.relativeToName))
             return false;
         return true;
     }
@@ -162,11 +162,11 @@ public class EntryLocation {
     @Override
     public String toString() {
         final StringBuilder buf = new StringBuilder();
-        if(alias != null) {
-            buf.append(alias).append('=');
+        if(name != null) {
+            buf.append(name).append('=');
         }
-        if(relativeTo != null) {
-            buf.append('$').append(relativeTo).append('/');
+        if(relativeToName != null) {
+            buf.append('$').append(relativeToName).append('/');
         }
         if(path != null) {
             buf.append(path);
