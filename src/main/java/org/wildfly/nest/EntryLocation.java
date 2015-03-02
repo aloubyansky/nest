@@ -26,30 +26,73 @@ package org.wildfly.nest;
 
 
 /**
- * Represents information about where the item has to be unpacked to.
+ * Represents location information of the item.
  *
  * @author Alexey Loubyansky
  */
 public class EntryLocation {
 
+    public static final EntryLocation DEFAULT = path(".");
+
+    /** name/alias for this location, may be null */
     private final String name;
+    /** name/alias of the location relative to which this location should be resolved, may be null */
     private final String relativeToName;
+    /** the path is absolute if relativeToName is null, otherwise the path is relative, may be null */
     private final String path;
 
+    /**
+     * Creates a new location based on the absolute path passed in as an argument.
+     *
+     * @param path  absolute path for which the location should be created
+     * @return  location representing the path
+     */
     public static EntryLocation path(String path) {
         return new EntryLocation(path);
     }
 
-    public static EntryLocation name(String name) {
-        return new EntryLocation(name, null);
+    /**
+     * Creates a new location with the path relative to the named location.
+     *
+     * @param locationName  location name relative to which new location should be created
+     * @param relativePath  relative to the specified named location path
+     * @return  new location
+     */
+    public static EntryLocation path(String locationName, String relativePath) {
+        return new EntryLocation(relativePath);
     }
 
-    public static EntryLocation name(String name, String path) {
-        return new EntryLocation(name, path);
+    /**
+     * Creates a new location with the specified name.
+     *
+     * @param locationName  location name
+     * @return  new named location
+     */
+    public static EntryLocation name(String locationName) {
+        return new EntryLocation(locationName, null);
     }
 
-    public static EntryLocation name(String name, String relativeToName, String path) {
-        return new EntryLocation(name, relativeToName, path);
+    /**
+     * Creates a new named location for the given path.
+     *
+     * @param locationName  location name
+     * @param path  absolute path of the location
+     * @return  new named location for the specified path
+     */
+    public static EntryLocation name(String locationName, String path) {
+        return new EntryLocation(locationName, path);
+    }
+
+    /**
+     * Creates a new named location relative to the specified named location.
+     *
+     * @param locationName  new location name
+     * @param relativeToName  named location relative to which the new location will be resolved
+     * @param path  relative to the specified named location path
+     * @return  new named location relative to the specified named location
+     */
+    public static EntryLocation name(String locationName, String relativeToName, String path) {
+        return new EntryLocation(locationName, relativeToName, path);
     }
 
     EntryLocation(String path) {

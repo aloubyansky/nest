@@ -32,6 +32,10 @@ public class NestEntry {
     private final EntryLocation nestLocation;
     private final EntryLocation targetLocation;
 
+    public static NestEntry create() {
+        return under(EntryLocation.DEFAULT);
+    }
+
     public static NestEntry under(EntryLocation nestLocation) {
         return new NestEntry(nestLocation, null);
     }

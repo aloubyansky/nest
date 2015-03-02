@@ -22,6 +22,9 @@
 
 package org.wildfly.nest.pack;
 
+import java.io.File;
+import java.io.IOException;
+
 
 /**
  * @author Alexey Loubyansky
@@ -182,6 +185,17 @@ public interface PackingNestBuilder {
      * @return  nest builder
      */
     EntryUnderBuilder addLocation(String srcLocationName, String relativePath);
+
+    /**
+     * Creates a package with the content added to the nest.
+     * If a file already exists at the requested location,
+     * the file will be replaced with the newly created one.
+     *
+     * @param dir  directory where to store the package
+     * @param name  name under which the package should be stored
+     * @return  created package file
+     */
+    File pack(File dir, String name) throws IOException;
 
     public interface EntryUnpackToBuilder extends PackingNestBuilder {
 

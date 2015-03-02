@@ -34,8 +34,11 @@ class EntrySourceImpl implements EntrySource {
     private final NestEntry nestEntry;
     private final EntryLocation srcLocation;
 
-    EntrySourceImpl(NestEntry nestEntry, EntryLocation srcLocation) {
+    EntrySourceImpl(EntryLocation srcLocation) {
+        this(NestEntry.create(), srcLocation);
+    }
 
+    EntrySourceImpl(NestEntry nestEntry, EntryLocation srcLocation) {
         if(nestEntry == null) {
             throw new IllegalArgumentException("entry is null");
         }

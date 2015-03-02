@@ -22,12 +22,21 @@
 
 package org.wildfly.nest.pack;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipOutputStream;
 
 import org.wildfly.nest.EntryLocation;
+import org.wildfly.nest.util.IoUtils;
+import org.wildfly.nest.util.ZipUtils;
 
 /**
  *
@@ -88,16 +97,74 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
 
     @Override
     public EntryUnderBuilder add(String srcPath) {
-        // TODO Auto-generated method stub
+        if(srcPath == null) {
+            throw new IllegalArgumentException("Path is null");
+        }
+        addEntry(new EntrySourceImpl(EntryLocation.path(srcPath)));
         return underBuilder;
     }
 
     @Override
     public EntryUnderBuilder addLocation(String srcLocation, String relativePath) {
-        // TODO Auto-generated method stub
+        if(srcLocation == null) {
+            throw new IllegalArgumentException("Source location name is null");
+        }
+        assertSourceLocation(srcLocation);
+        addEntry(new EntrySourceImpl(EntryLocation.path(srcLocation, relativePath)));
         return underBuilder;
     }
 
+    @Override
+    public File pack(File dir, String name) throws IOException {
+        if(name == null) {
+            throw new IllegalArgumentException("name is null");
+        }
+        if(!dir.exists()) {
+            if(!dir.mkdirs()) {
+                throw new IllegalStateException("Failed to create directory " + dir.getAbsolutePath());
+            }
+        } else if(!dir.isDirectory()) {
+            throw new IllegalStateException("The path is not a directory " + dir.getAbsolutePath());
+        }
+
+        final File zip = new File(dir, name);
+        if(zip.exists()) {
+            zip.delete();
+        }
+
+        ZipOutputStream zos = null;
+        try {
+            final FileOutputStream fis = new FileOutputStream(zip);
+            zos = new ZipOutputStream(new BufferedOutputStream(fis));
+            for(EntrySource entry : entries) {
+                final File f = new File(entry.getSourceLocation().getPath());
+                ZipUtils.addToZip(f, zos);
+            }
+        } catch(FileNotFoundException e) {
+            throw e;
+        } finally {
+            IoUtils.safeClose(zos);
+        }
+        return zip;
+    }
+
+    private void assertSourceLocation(String name) {
+        if(!sourceLocations.containsKey(name)) {
+            throw new IllegalStateException("Location not found: " + name);
+        }
+    }
+
+    private void addEntry(EntrySource entry) {
+        switch(entries.size()) {
+            case 0:
+                entries = Collections.singletonList(entry);
+                break;
+            case 1:
+                entries = new ArrayList<EntrySource>(entries);
+            default:
+                entries.add(entry);
+        }
+    }
     private void addSourceLocation(EntryLocation el) {
         switch(sourceLocations.size()) {
             case 0:
@@ -174,52 +241,52 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
 
         @Override
         public PackingNestBuilder nameSourceLocation(String name) {
-            return nameSourceLocation(name);
+            return PackingNestBuilderImpl.this.nameSourceLocation(name);
         }
 
         @Override
         public PackingNestBuilder nameSourceLocation(String name, String locationName, String path) {
-            return nameSourceLocation(name, locationName, path);
+            return PackingNestBuilderImpl.this.nameSourceLocation(name, locationName, path);
         }
 
         @Override
         public PackingNestBuilder linkSourceLocation(String name, String path) {
-            return linkSourceLocation(name, path);
+            return PackingNestBuilderImpl.this.linkSourceLocation(name, path);
         }
 
         @Override
         public PackingNestBuilder nameNestLocation(String name, String path) {
-            return nameNestLocation(name, path);
+            return PackingNestBuilderImpl.this.nameNestLocation(name, path);
         }
 
         @Override
         public PackingNestBuilder nameNestLocation(String name, String locationName, String path) {
-            // TODO Auto-generated method stub
-            return null;
+            return PackingNestBuilderImpl.this.nameNestLocation(name, locationName, path);
         }
 
         @Override
         public PackingNestBuilder nameUnpackLocation(String name) {
-            // TODO Auto-generated method stub
-            return null;
+            return PackingNestBuilderImpl.this.nameUnpackLocation(name);
         }
 
         @Override
         public PackingNestBuilder nameUnpackLocation(String name, String locationName, String path) {
-            // TODO Auto-generated method stub
-            return null;
+            return PackingNestBuilderImpl.this.nameUnpackLocation(name, locationName, path);
         }
 
         @Override
         public EntryUnderBuilder add(String srcPath) {
-            // TODO Auto-generated method stub
-            return null;
+            return PackingNestBuilderImpl.this.add(srcPath);
         }
 
         @Override
         public EntryUnderBuilder addLocation(String locationName, String relativePath) {
-            // TODO Auto-generated method stub
-            return null;
+            return PackingNestBuilderImpl.this.addLocation(locationName, relativePath);
+        }
+
+        @Override
+        public File pack(File dir, String name) throws IOException {
+            return PackingNestBuilderImpl.this.pack(dir, name);
         }
     }
 }

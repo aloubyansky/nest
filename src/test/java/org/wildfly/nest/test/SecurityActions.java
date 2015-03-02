@@ -22,16 +22,25 @@
 
 package org.wildfly.nest.test;
 
-import org.junit.Test;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class MainTestCase {
+final class SecurityActions {
 
-    @Test
-    public void testMain() throws Exception {
-        System.out.println("Test!");
+    static String getSystemProperty(final String name) {
+        final SecurityManager mgr = System.getSecurityManager();
+        if(mgr == null) {
+            return System.getProperty(name);
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<String>(){
+                @Override
+                public String run() {
+                    return System.getProperty(name);
+                }});
+        }
     }
 }
