@@ -40,7 +40,7 @@ import java.util.zip.ZipOutputStream;
  */
 public class ZipUtils {
 
-    private static final String ENTRY_SEPARATOR = "/";
+    public static final String ENTRY_SEPARATOR = "/";
 
     public static void zip(File sourceDir, File zipFile) {
         try {
@@ -74,10 +74,24 @@ public class ZipUtils {
      * @throws IOException
      */
     public static void addToZip(File fileOrDir, ZipOutputStream zos) throws IOException {
+        addToZip(fileOrDir, null, zos);
+    }
+
+    /**
+     * Adds an entry to the ZIP at the specified path.
+     * If the path is null, the entry will added at the root of the ZIP.
+     *
+     * @param fileOrDir  file or directory
+     * @param path  path relative to the root of the ZIP
+     * @param zos  target ZIP
+     * @throws IOException
+     */
+    public static void addToZip(File fileOrDir, String path, ZipOutputStream zos) throws IOException {
         if(fileOrDir.isDirectory()) {
-            addDirectoryToZip(fileOrDir, fileOrDir.getName(), zos);
+            final String dirName = path == null ? fileOrDir.getName() : path + ENTRY_SEPARATOR + fileOrDir.getName();
+            addDirectoryToZip(fileOrDir, dirName, zos);
         } else {
-            addFileToZip(fileOrDir, null, zos);
+            addFileToZip(fileOrDir, path, zos);
         }
     }
 

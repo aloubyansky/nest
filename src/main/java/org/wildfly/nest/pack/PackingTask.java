@@ -22,19 +22,133 @@
 
 package org.wildfly.nest.pack;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipOutputStream;
+
+import org.wildfly.nest.EntryLocation;
+import org.wildfly.nest.NestException;
+import org.wildfly.nest.util.IoUtils;
+import org.wildfly.nest.util.ZipUtils;
+
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface PackingTask {
+class PackingTask {
 
-    class Builder {
+    static final Logger log = Logger.getLogger(PackingTask.class.getName());
 
-        public static Builder newTask() {
-            return new Builder();
+    static PackingTask forEntries(List<EntrySource> entries) {
+        return new PackingTask(entries);
+    }
+
+    private Map<String, EntryLocation> sourceLocations = Collections.emptyMap();
+    private Map<String, EntryLocation> nestLocations = Collections.emptyMap();
+    private Map<String, EntryLocation> unpackLocations = Collections.emptyMap();
+
+    private final List<EntrySource> entries;
+    private File zipTo;
+
+    private PackingTask(List<EntrySource> entries) {
+        if(entries == null) {
+            throw new IllegalArgumentException("entries is null");
+        }
+        this.entries = entries;
+    }
+
+    PackingTask setSourceLocations(Map<String, EntryLocation> sourceLocations) {
+        if(sourceLocations == null) {
+            throw new IllegalArgumentException("sourceLocations is null");
+        }
+        this.sourceLocations = sourceLocations;
+        return this;
+    }
+
+    PackingTask setNestLocations(Map<String, EntryLocation> nestLocations) {
+        if(nestLocations == null) {
+            throw new IllegalArgumentException("nestLocations is null");
+        }
+        this.nestLocations = nestLocations;
+        return this;
+    }
+
+    PackingTask setUnpackLocations(Map<String, EntryLocation> unpackLocations) {
+        if(unpackLocations == null) {
+            throw new IllegalArgumentException("unpackLocations is null");
+        }
+        this.unpackLocations = unpackLocations;
+        return this;
+    }
+
+    PackingTask zipTo(File file) {
+        if(file == null) {
+            throw new IllegalArgumentException("file is null");
+        }
+        this.zipTo = file;
+        return this;
+    }
+
+    void run() throws NestException {
+
+        if(zipTo == null) {
+            throw new NestException("zipTo file was not specified");
         }
 
-        private Builder() {
+        if(zipTo.exists()) {
+            zipTo.delete();
         }
+
+        ZipOutputStream zos = null;
+        try {
+            final FileOutputStream fis = new FileOutputStream(zipTo);
+            zos = new ZipOutputStream(new BufferedOutputStream(fis));
+            for(EntrySource entry : entries) {
+                final String srcPath = resolvePath(entry.getSourceLocation(), sourceLocations);
+                if(srcPath == null) {
+                    throw new NestException("Failed to resolve source path for location " + entry.getSourceLocation());
+                }
+                final String nestPath = resolvePath(entry.getNestEntry().getNestLocation(), nestLocations);
+                if(log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "adding " + srcPath + " as " + nestPath);
+                }
+                ZipUtils.addToZip(new File(srcPath), nestPath, zos);
+            }
+        } catch (IOException e) {
+            throw new NestException("Failed to create ZIP " + zipTo.getAbsolutePath(), e);
+        } finally {
+            IoUtils.safeClose(zos);
+        }
+    }
+
+    private String resolvePath(EntryLocation location, Map<String, EntryLocation> locations) throws NestException {
+        if(location == EntryLocation.DEFAULT) {
+            return null;
+        }
+
+        final String relativeToName = location.getRelativeTo();
+        if(relativeToName == null) {
+            return location.getPath();
+        }
+
+        final EntryLocation relativeToLocation = locations.get(relativeToName);
+        if(relativeToLocation == null) {
+            throw new NestException("Missing location definition for " + relativeToName);
+        }
+        final String resolved = resolvePath(relativeToLocation, locations);
+        if(resolved == null) {
+            return location.getPath();
+        }
+        if(location.getPath() == null) {
+            return resolved;
+        }
+        return resolved + ZipUtils.ENTRY_SEPARATOR + location.getPath();
     }
 }

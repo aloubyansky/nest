@@ -22,21 +22,15 @@
 
 package org.wildfly.nest.pack;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipOutputStream;
 
 import org.wildfly.nest.EntryLocation;
-import org.wildfly.nest.util.IoUtils;
-import org.wildfly.nest.util.ZipUtils;
+import org.wildfly.nest.NestException;
 
 /**
  *
@@ -46,7 +40,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
 
     private Map<String, EntryLocation> sourceLocations = Collections.emptyMap();
     private Map<String, EntryLocation> nestLocations = Collections.emptyMap();
-    private Map<String, EntryLocation> targetLocations = Collections.emptyMap();
+    private Map<String, EntryLocation> unpackLocations = Collections.emptyMap();
 
     private List<EntrySource> entries = Collections.emptyList();
 
@@ -105,6 +99,16 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
     }
 
     @Override
+    public EntryUnderBuilder addLocation(String srcLocationName) {
+        if(srcLocationName == null) {
+            throw new IllegalArgumentException("Source location name is null");
+        }
+        EntryLocation srcLocation = assertSourceLocation(srcLocationName);
+        addEntry(new EntrySourceImpl(srcLocation));
+        return underBuilder;
+    }
+
+    @Override
     public EntryUnderBuilder addLocation(String srcLocation, String relativePath) {
         if(srcLocation == null) {
             throw new IllegalArgumentException("Source location name is null");
@@ -115,7 +119,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
     }
 
     @Override
-    public File pack(File dir, String name) throws IOException {
+    public File pack(File dir, String name) throws NestException {
         if(name == null) {
             throw new IllegalArgumentException("name is null");
         }
@@ -128,30 +132,21 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         }
 
         final File zip = new File(dir, name);
-        if(zip.exists()) {
-            zip.delete();
-        }
-
-        ZipOutputStream zos = null;
-        try {
-            final FileOutputStream fis = new FileOutputStream(zip);
-            zos = new ZipOutputStream(new BufferedOutputStream(fis));
-            for(EntrySource entry : entries) {
-                final File f = new File(entry.getSourceLocation().getPath());
-                ZipUtils.addToZip(f, zos);
-            }
-        } catch(FileNotFoundException e) {
-            throw e;
-        } finally {
-            IoUtils.safeClose(zos);
-        }
+        PackingTask.forEntries(entries)
+            .setSourceLocations(sourceLocations)
+            .setNestLocations(nestLocations)
+            .setUnpackLocations(unpackLocations)
+            .zipTo(zip)
+            .run();
         return zip;
     }
 
-    private void assertSourceLocation(String name) {
-        if(!sourceLocations.containsKey(name)) {
-            throw new IllegalStateException("Location not found: " + name);
+    private EntryLocation assertSourceLocation(String name) {
+        final EntryLocation location = sourceLocations.get(name);
+        if(location == null) {
+            throw new IllegalStateException("Source location not found: " + name);
         }
+        return location;
     }
 
     private void addEntry(EntrySource entry) {
@@ -190,14 +185,14 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
     }
 
     private void addTargetLocation(EntryLocation el) {
-        switch(targetLocations.size()) {
+        switch(unpackLocations.size()) {
             case 0:
-                targetLocations = Collections.<String, EntryLocation>singletonMap(el.getName(), el);
+                unpackLocations = Collections.<String, EntryLocation>singletonMap(el.getName(), el);
                 break;
             case 1:
-                targetLocations = new HashMap<String, EntryLocation>(targetLocations);
+                unpackLocations = new HashMap<String, EntryLocation>(unpackLocations);
             default:
-                targetLocations.put(el.getName(), el);
+                unpackLocations.put(el.getName(), el);
         }
     }
 
@@ -285,7 +280,12 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         }
 
         @Override
-        public File pack(File dir, String name) throws IOException {
+        public EntryUnderBuilder addLocation(String srcLocationName) {
+            return PackingNestBuilderImpl.this.addLocation(srcLocationName);
+        }
+
+        @Override
+        public File pack(File dir, String name) throws NestException {
             return PackingNestBuilderImpl.this.pack(dir, name);
         }
     }

@@ -23,7 +23,8 @@
 package org.wildfly.nest.pack;
 
 import java.io.File;
-import java.io.IOException;
+
+import org.wildfly.nest.NestException;
 
 
 /**
@@ -166,13 +167,13 @@ public interface PackingNestBuilder {
      */
     EntryUnderBuilder add(String srcPath);
 
-    /** TODO
+    /**
      * Adds the content located at the specified named source location.
      *
      * @param srcLocationName  named source location
      * @return  nest builder
-     *
-    EntryUnderBuilder addLocation(String srcLocationName); */
+     */
+    EntryUnderBuilder addLocation(String srcLocationName);
 
     /**
      * Adds the content located at the path relative to the specified named
@@ -194,8 +195,9 @@ public interface PackingNestBuilder {
      * @param dir  directory where to store the package
      * @param name  name under which the package should be stored
      * @return  created package file
+     * @throws NestException  in case packing failed
      */
-    File pack(File dir, String name) throws IOException;
+    File pack(File dir, String name) throws NestException;
 
     public interface EntryUnpackToBuilder extends PackingNestBuilder {
 

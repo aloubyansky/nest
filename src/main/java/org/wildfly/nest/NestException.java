@@ -20,17 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.pack;
-
-import java.util.List;
-
-import org.wildfly.nest.NestContext;
+package org.wildfly.nest;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface PackingContext extends NestContext {
+public class NestException extends Exception {
 
-    List<EntrySource> getEntries();
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+
+    public NestException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    public NestException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public NestException(String message) {
+        super(message);
+    }
+
+    public NestException(Throwable cause) {
+        super(cause);
+    }
 }

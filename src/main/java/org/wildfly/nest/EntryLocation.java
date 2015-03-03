@@ -59,7 +59,7 @@ public class EntryLocation {
      * @return  new location
      */
     public static EntryLocation path(String locationName, String relativePath) {
-        return new EntryLocation(relativePath);
+        return new EntryLocation(null, locationName, relativePath);
     }
 
     /**
@@ -92,6 +92,9 @@ public class EntryLocation {
      * @return  new named location relative to the specified named location
      */
     public static EntryLocation name(String locationName, String relativeToName, String path) {
+        if(locationName == null) {
+            throw new IllegalArgumentException("locationName is null");
+        }
         return new EntryLocation(locationName, relativeToName, path);
     }
 
@@ -114,9 +117,6 @@ public class EntryLocation {
     }
 
     EntryLocation(String name, String relativeTo, String path) {
-        if(name == null) {
-            throw new IllegalArgumentException("name is null");
-        }
         if(path == null) {
             throw new IllegalArgumentException("path is null");
         }

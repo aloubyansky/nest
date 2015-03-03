@@ -22,35 +22,50 @@
 
 package org.wildfly.nest.test;
 
-
 import java.io.File;
 
 import org.junit.Test;
 import org.wildfly.nest.Nest;
 import org.wildfly.nest.util.IoUtils;
 
+
 /**
  *
  * @author Alexey Loubyansky
  */
-public class AbsolutePathNestBuildTestCase extends NestBuildTestBase {
+public class SourceLocationsBuildTestCase extends NestBuildTestBase {
 
     @Test
     public void testMain() throws Exception {
 
         final File testFile = Util.newFile(testDir, "test.txt");
-        final File aDir = IoUtils.mkdir(testDir, "a");
+
+        final File aBaseDir = IoUtils.mkdir(testDir, "home");
+        final File aDir = IoUtils.mkdir(aBaseDir, "a");
         Util.newFile(aDir, "a1TestFile.txt");
         Util.newFile(aDir, "a2TestFile.txt");
-        final File bDir = IoUtils.mkdir(aDir, "b");
+        final File aaDir = IoUtils.mkdir(aDir, "aa");
+        Util.newFile(aaDir, "aaTestFile.txt");
+
+        final File bBaseDir = IoUtils.mkdir(testDir, "home", "skip", "to");
+        final File bDir = IoUtils.mkdir(bBaseDir, "b");
         Util.newFile(bDir, "b1TestFile.txt");
-        IoUtils.mkdir(aDir, "c");
+
+        final File cBaseDir = IoUtils.mkdir(testDir, "origin", "of");
+        final File cDir = IoUtils.mkdir(cBaseDir, "c");
+        Util.newFile(cDir, "c1TestFile.txt");
 
         final File nest = Nest.create()
-                .add(testFile.getAbsolutePath())
-                .add(aDir.getAbsolutePath())
-                .pack(testDir, "nest.zip");
+            .nameSourceLocation("BASE_LOCATION_A")
+            .nameSourceLocation("BASE_LOCATION_B", "BASE_LOCATION_A", "skip")
+            .linkSourceLocation("LOCATION_C", cDir.getAbsolutePath())
+            .addLocation("BASE_LOCATION_A", "a")
+            .addLocation("BASE_LOCATION_B", "to/b")
+            .addLocation("LOCATION_C")
+            .add(testFile.getAbsolutePath())
+            .linkSourceLocation("BASE_LOCATION_A", aBaseDir.getAbsolutePath())
+            .pack(testDir, "nest.zip");
 
-        assertContent(nest, testFile, aDir);
+        assertContent(nest, testFile, aDir, bDir, cDir);
     }
 }
