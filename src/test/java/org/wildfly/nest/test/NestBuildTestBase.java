@@ -33,6 +33,7 @@ import java.util.List;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.wildfly.nest.test.util.NestDir;
 import org.wildfly.nest.util.HashUtils;
 import org.wildfly.nest.util.IoUtils;
 import org.wildfly.nest.util.ZipUtils;
@@ -89,5 +90,23 @@ public class NestBuildTestBase {
                 throw new IllegalStateException("Failed to calculate hash: " + e.getLocalizedMessage());
             }
         }
+    }
+
+    static void assertContent(File zip, NestDir dir) {
+
+        File nest;
+        try {
+            nest = IoUtils.mkdir(testDir, "assert_nest");
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to create directory: " + e.getLocalizedMessage(), e);
+        }
+
+        try {
+            ZipUtils.unzip(zip, nest);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to unzip the nest: " + e.getMessage());
+        }
+
+        dir.assertMatches(nest);
     }
 }

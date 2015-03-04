@@ -149,6 +149,14 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         return location;
     }
 
+    private EntryLocation assertNestLocation(String name) {
+        final EntryLocation location = nestLocations.get(name);
+        if(location == null) {
+            throw new IllegalStateException("Nest location not found: " + name);
+        }
+        return location;
+    }
+
     private void addEntry(EntrySource entry) {
         switch(entries.size()) {
             case 0:
@@ -196,6 +204,16 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         }
     }
 
+    /**
+     * Returns the last added entry.
+     *
+     * @return  last added entry
+     */
+    private EntrySource getLastEntry() {
+        assert !entries.isEmpty() : "there are no entries";
+        return entries.get(entries.size() - 1);
+    }
+
     class EntryUnpackToBuilderImpl extends DelegatingPackingNestBuilder implements EntryUnpackToBuilder {
 
         @Override
@@ -215,19 +233,36 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
 
         @Override
         public EntryUnpackToBuilder under(String nestPath) {
-            // TODO Auto-generated method stub
+            if(nestPath == null) {
+                throw new IllegalArgumentException("nestPath is null");
+            }
+            final EntrySource entrySource = getLastEntry();
+            entrySource.getNestEntry().setNestLocation(EntryLocation.path(nestPath));
             return unpackToBuilder;
         }
 
         @Override
         public EntryUnpackToBuilder underLocation(String nestLocation) {
-            // TODO Auto-generated method stub
+            if(nestLocation == null) {
+                throw new IllegalArgumentException("nestLocation is null");
+            }
+            final EntryLocation location = assertNestLocation(nestLocation);
+            final EntrySource entrySource = getLastEntry();
+            entrySource.getNestEntry().setNestLocation(location);
             return unpackToBuilder;
         }
 
         @Override
         public EntryUnpackToBuilder underLocation(String nestLocation, String relativePath) {
-            // TODO Auto-generated method stub
+            if(nestLocation == null) {
+                throw new IllegalArgumentException("nestLocation is null");
+            }
+            if(relativePath == null) {
+                throw new IllegalArgumentException("relativePath is null");
+            }
+            assertNestLocation(nestLocation);
+            final EntrySource entrySource = getLastEntry();
+            entrySource.getNestEntry().setNestLocation(EntryLocation.path(nestLocation, relativePath));
             return unpackToBuilder;
         }
     }

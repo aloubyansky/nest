@@ -152,16 +152,17 @@ public class ZipUtils {
      * unpack...
      *
      * @param zip the zip
-     * @param patchDir the patch dir
+     * @param targetDir the patch dir
      * @throws IOException
      */
-    private static void unzip(final ZipFile zip, final File patchDir) throws IOException {
+    private static void unzip(final ZipFile zip, final File targetDir) throws IOException {
         final Enumeration<? extends ZipEntry> entries = zip.entries();
         while(entries.hasMoreElements()) {
             final ZipEntry entry = entries.nextElement();
             final String name = entry.getName();
-            final File current = new File(patchDir, name);
+            final File current = new File(targetDir, name);
             if(entry.isDirectory()) {
+                current.mkdirs();
                 continue;
             } else {
                 if(! current.getParentFile().exists()) {

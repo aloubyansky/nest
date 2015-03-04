@@ -117,7 +117,7 @@ class PackingTask {
                 }
                 final String nestPath = resolvePath(entry.getNestEntry().getNestLocation(), nestLocations);
                 if(log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "adding " + srcPath + " as " + nestPath);
+                    log.log(Level.INFO, "adding " + srcPath + " as " + nestPath);
                 }
                 ZipUtils.addToZip(new File(srcPath), nestPath, zos);
             }

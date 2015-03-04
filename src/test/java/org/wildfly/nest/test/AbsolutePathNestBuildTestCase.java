@@ -24,9 +24,11 @@ package org.wildfly.nest.test;
 
 
 import java.io.File;
+import java.io.FileFilter;
 
 import org.junit.Test;
 import org.wildfly.nest.Nest;
+import org.wildfly.nest.test.util.NestDir;
 import org.wildfly.nest.util.IoUtils;
 
 /**
@@ -38,19 +40,25 @@ public class AbsolutePathNestBuildTestCase extends NestBuildTestBase {
     @Test
     public void testMain() throws Exception {
 
-        final File testFile = Util.newFile(testDir, "test.txt");
-        final File aDir = IoUtils.mkdir(testDir, "a");
+        final File nestBase = IoUtils.mkdir(testDir, "nest_base");
+        final File testFile = Util.newFile(nestBase, "test.txt");
+        final File aDir = IoUtils.mkdir(nestBase, "a");
         Util.newFile(aDir, "a1TestFile.txt");
         Util.newFile(aDir, "a2TestFile.txt");
         final File bDir = IoUtils.mkdir(aDir, "b");
         Util.newFile(bDir, "b1TestFile.txt");
         IoUtils.mkdir(aDir, "c");
+        IoUtils.mkdir(nestBase, "d");
 
         final File nest = Nest.create()
                 .add(testFile.getAbsolutePath())
                 .add(aDir.getAbsolutePath())
                 .pack(testDir, "nest.zip");
 
-        assertContent(nest, testFile, aDir);
+        assertContent(nest, NestDir.from(nestBase, new FileFilter(){
+            @Override
+            public boolean accept(File pathname) {
+                return !pathname.getName().equals("d");
+            }}));
     }
 }

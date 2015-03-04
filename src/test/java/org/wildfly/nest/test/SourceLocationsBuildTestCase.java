@@ -26,6 +26,7 @@ import java.io.File;
 
 import org.junit.Test;
 import org.wildfly.nest.Nest;
+import org.wildfly.nest.test.util.NestDir;
 import org.wildfly.nest.util.IoUtils;
 
 
@@ -55,7 +56,7 @@ public class SourceLocationsBuildTestCase extends NestBuildTestBase {
         final File cDir = IoUtils.mkdir(cBaseDir, "c");
         Util.newFile(cDir, "c1TestFile.txt");
 
-        final File nest = Nest.create()
+        final File nestZip = Nest.create()
             .nameSourceLocation("BASE_LOCATION_A")
             .nameSourceLocation("BASE_LOCATION_B", "BASE_LOCATION_A", "skip")
             .linkSourceLocation("LOCATION_C", cDir.getAbsolutePath())
@@ -66,6 +67,12 @@ public class SourceLocationsBuildTestCase extends NestBuildTestBase {
             .linkSourceLocation("BASE_LOCATION_A", aBaseDir.getAbsolutePath())
             .pack(testDir, "nest.zip");
 
-        assertContent(nest, testFile, aDir, bDir, cDir);
+        final NestDir expectedTree = NestDir.create("nest")
+            .add(aDir)
+            .add(bDir)
+            .add(cDir)
+            .add(testFile);
+
+        assertContent(nestZip, expectedTree);
     }
 }

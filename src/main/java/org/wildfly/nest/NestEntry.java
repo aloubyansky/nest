@@ -29,7 +29,7 @@ package org.wildfly.nest;
  */
 public class NestEntry {
 
-    private final EntryLocation nestLocation;
+    private EntryLocation nestLocation;
     private final EntryLocation targetLocation;
 
     public static NestEntry create() {
@@ -59,6 +59,17 @@ public class NestEntry {
      */
     public EntryLocation getNestLocation() {
         return nestLocation;
+    }
+
+    /**
+     * Sets entry location in the nest to the specified location.
+     * If the passed in location is null, the entry will be associated with
+     * the nest root.
+     *
+     * @param location  nest location or null
+     */
+    public void setNestLocation(EntryLocation location) {
+        this.nestLocation = location == null ? EntryLocation.DEFAULT : location;
     }
 
     /**
