@@ -34,6 +34,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.wildfly.nest.test.util.NestDir;
+import org.wildfly.nest.test.util.Util;
 import org.wildfly.nest.util.HashUtils;
 import org.wildfly.nest.util.IoUtils;
 import org.wildfly.nest.util.ZipUtils;
@@ -92,7 +93,7 @@ public class NestBuildTestBase {
         }
     }
 
-    static void assertContent(File zip, NestDir dir) {
+    static void assertZipContent(File zip, NestDir dir) {
 
         File nest;
         try {

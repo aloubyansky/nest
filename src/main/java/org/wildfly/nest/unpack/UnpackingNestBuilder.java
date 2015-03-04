@@ -20,37 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest;
+package org.wildfly.nest.unpack;
 
 import java.io.File;
 
-import org.wildfly.nest.pack.PackingNestBuilder;
-import org.wildfly.nest.unpack.UnpackingNestBuilder;
+import org.wildfly.nest.NestException;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class Nest {
+public interface UnpackingNestBuilder {
 
-    /**
-     * Returns a new instance of a builder which can be used to build
-     * a new nest.
-     *
-     * @return  builder to build a nest
-     */
-    public static PackingNestBuilder create() {
-        return PackingNestBuilder.FACTORY.create();
+    class FACTORY {
+        public static UnpackingNestBuilder create(File nestFile) {
+            return new UnpackingNestBuilderImpl(nestFile);
+        }
     }
 
-    /**
-     * Returns a new instance of a builder which can be used to unpack
-     * an existing nest.
-     *
-     * @param nestFile  absolute path to the existing nest
-     * @return  builder to unpack the nest
-     */
-    public static UnpackingNestBuilder open(File nestFile) {
-        return UnpackingNestBuilder.FACTORY.create(nestFile);
-    }
+    void unpack(File dir) throws NestException;
 }

@@ -42,6 +42,15 @@ import org.wildfly.nest.util.ZipUtils;
 public class NestDir {
 
     /**
+     * Creates a root dir.
+     *
+     * @return
+     */
+    public static NestDir root() {
+        return create("nest_root");
+    }
+
+    /**
      * Creates a new dir for the given name
      *
      * @param name

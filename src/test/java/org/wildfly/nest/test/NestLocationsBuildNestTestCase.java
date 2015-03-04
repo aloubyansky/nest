@@ -29,6 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.wildfly.nest.Nest;
 import org.wildfly.nest.test.util.NestDir;
+import org.wildfly.nest.test.util.Util;
 import org.wildfly.nest.util.IoUtils;
 
 /**
@@ -78,28 +79,18 @@ public class NestLocationsBuildNestTestCase extends NestBuildTestBase {
             .add(cDir.getAbsolutePath()).underLocation("NEST_LOCATION_C")
             .pack(testDir, "nest.zip");
 
-        final NestDir nestTree = NestDir.create("nest_base");
-        final NestDir baseA = nestTree.newDir("base-a")
+        final NestDir expectedTree = NestDir.root();
+        final NestDir baseA = expectedTree.newDir("base-a")
                 .add(aDir)
                 .add(cDir);
         baseA.newDir("etc", "skip", "base-b").add(bDir);
-        nestTree.newDir("misc").add(testFile);
+        expectedTree.newDir("misc").add(testFile);
 
+        assertZipContent(nestZip, expectedTree);
 
-/*
-
-        final File tmpDir = new File(testDir, "testMain");
-        final File miscDir = new File(tmpDir, "misc");
-        IoUtils.copyFile(testFile, new File(miscDir, testFile.getName()));
-
-        final File baseA = new File(tmpDir, "base-a");
-        IoUtils.copyFile(aDir, baseA);
-        IoUtils.copyFile(cDir, new File(baseA, "base-c"));
-        final File baseB = new File(new File(new File(baseA, "etc"), "skip"), "base-b");
-        IoUtils.copyFile(bDir, baseB);
-
-        assertContent(nest, miscDir, baseA);
-*/
-        assertContent(nestZip, nestTree);
+        // test unpacking
+        final File unpackedNest = new File(testDir, "unpacked-nest");
+        Nest.open(nestZip).unpack(unpackedNest);
+        expectedTree.assertMatches(unpackedNest);
     }
 }

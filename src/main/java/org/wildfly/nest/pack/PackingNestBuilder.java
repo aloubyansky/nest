@@ -28,8 +28,8 @@ import org.wildfly.nest.NestException;
 
 
 /**
- * @author Alexey Loubyansky
  *
+ * @author Alexey Loubyansky
  */
 public interface PackingNestBuilder {
 

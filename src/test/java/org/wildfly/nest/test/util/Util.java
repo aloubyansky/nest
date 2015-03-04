@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.test;
+package org.wildfly.nest.test.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,7 +33,7 @@ import org.wildfly.nest.util.IoUtils;
  *
  * @author Alexey Loubyansky
  */
-class Util {
+public class Util {
 
     static final File TMP_DIR = new File(SecurityActions.getSystemProperty("java.io.tmpdir"));
 
@@ -43,7 +43,7 @@ class Util {
      *
      * @return  created directory
      */
-    static File mkRandomDir() {
+    public static File mkRandomDir() {
         try {
             return IoUtils.mkdir(TMP_DIR, randomString());
         } catch (IOException e) {
@@ -56,7 +56,7 @@ class Util {
      *
      * @return  created file
      */
-    static File newFile(File dir, String fileName) {
+    public static File newFile(File dir, String fileName) {
         final File f = new File(dir, fileName);
         if(f.exists()) {
             throw new IllegalStateException("File already exists: " + f.getAbsolutePath());
@@ -73,7 +73,7 @@ class Util {
         return f;
     }
 
-    static String randomString() {
+    public static String randomString() {
         return UUID.randomUUID().toString();
     }
 }

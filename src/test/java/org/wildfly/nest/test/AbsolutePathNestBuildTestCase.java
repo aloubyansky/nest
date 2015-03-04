@@ -29,6 +29,7 @@ import java.io.FileFilter;
 import org.junit.Test;
 import org.wildfly.nest.Nest;
 import org.wildfly.nest.test.util.NestDir;
+import org.wildfly.nest.test.util.Util;
 import org.wildfly.nest.util.IoUtils;
 
 /**
@@ -50,15 +51,22 @@ public class AbsolutePathNestBuildTestCase extends NestBuildTestBase {
         IoUtils.mkdir(aDir, "c");
         IoUtils.mkdir(nestBase, "d");
 
-        final File nest = Nest.create()
+        final File nestZip = Nest.create()
                 .add(testFile.getAbsolutePath())
                 .add(aDir.getAbsolutePath())
                 .pack(testDir, "nest.zip");
 
-        assertContent(nest, NestDir.from(nestBase, new FileFilter(){
+        final NestDir expectedTree = NestDir.from(nestBase, new FileFilter(){
             @Override
             public boolean accept(File pathname) {
                 return !pathname.getName().equals("d");
-            }}));
+            }});
+
+        assertZipContent(nestZip, expectedTree);
+
+        // test unpacking
+        final File unpackedNest = new File(testDir, "unpacked-nest");
+        Nest.open(nestZip).unpack(unpackedNest);
+        expectedTree.assertMatches(unpackedNest);
     }
 }

@@ -219,13 +219,15 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         @Override
         public PackingNestBuilder unpackToLocation(String unpackLocation) {
             // TODO Auto-generated method stub
-            return PackingNestBuilderImpl.this;
+            //return PackingNestBuilderImpl.this;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public PackingNestBuilder unpackToLocation(String unpackLocation, String relativePath) {
             // TODO Auto-generated method stub
-            return PackingNestBuilderImpl.this;
+            //return PackingNestBuilderImpl.this;
+            throw new UnsupportedOperationException();
         }
     }
 
