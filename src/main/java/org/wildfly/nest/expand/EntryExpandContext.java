@@ -19,19 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.nest.expand;
 
-package org.wildfly.nest;
+import java.io.InputStream;
 
-import java.util.Collection;
-
+import org.wildfly.nest.NestException;
 
 /**
- *
- * @author Alexey Loubyansky
- */
-public interface NestContext {
+*
+* @author Alexey Loubyansky
+*/
+public interface EntryExpandContext<T> {
 
-    Collection<String> getNestLocationNames();
+    NestExpandContext getNestContext();
 
-    EntryLocation getNestLocation(String name);
- }
+    T getEntry();
+
+    InputStream getEntryInputStream() throws NestException;
+}

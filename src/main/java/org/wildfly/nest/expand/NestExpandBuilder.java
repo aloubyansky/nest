@@ -20,13 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.unpack;
+package org.wildfly.nest.expand;
+
+import java.io.File;
+
+import org.wildfly.nest.NestException;
+import org.wildfly.nest.builder.CommonBuilder;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface SectionReader {
+public interface NestExpandBuilder extends CommonBuilder<NestExpandBuilder> {
 
-    void read(UnpackingContext ctx);
+    class FACTORY {
+        public static NestExpandBuilder create(File nestFile) {
+            return new NestExpandBuilderImpl(nestFile);
+        }
+    }
+
+    void unpack(File dir) throws NestException;
 }

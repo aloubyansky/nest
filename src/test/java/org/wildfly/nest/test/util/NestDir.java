@@ -85,10 +85,6 @@ public class NestDir {
         return from(dir, asName, null);
     }
 
-    public static NestDir from(NestDir parent, File dir) {
-        return from(null, dir, null);
-    }
-
     public static NestDir from(File dir, FileFilter filter) {
         return from(dir, dir.getName(), filter);
     }
@@ -97,11 +93,7 @@ public class NestDir {
         return from(null, dir, asName, filter);
     }
 
-    public static NestDir from(NestDir parent, File dir, FileFilter filter) {
-        return from(parent, dir, dir.getName(), null);
-    }
-
-    public static NestDir from(NestDir parent, File dir, String asName, FileFilter filter) {
+    private static NestDir from(NestDir parent, File dir, String asName, FileFilter filter) {
 
         if (dir == null || !dir.isDirectory()) {
             throw new IllegalArgumentException("dir is not a directory");
@@ -237,6 +229,16 @@ public class NestDir {
             default:
                 files.put(file.getName(), file);
         }
+        return this;
+    }
+
+    public NestDir add(File dir, String asName, FileFilter filter) {
+        from(this, dir, asName, filter);
+        return this;
+    }
+
+    public NestDir add(File dir, FileFilter filter) {
+        from(this, dir, dir.getName(), null);
         return this;
     }
 

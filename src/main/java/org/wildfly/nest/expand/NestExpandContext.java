@@ -20,12 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.unpack;
+package org.wildfly.nest.expand;
+
+import java.io.File;
+
+import org.wildfly.nest.NestContext;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface ReadingChain extends Iterable<SectionReader> {
+public interface NestExpandContext extends NestContext {
 
+    File getNestFile();
+
+    File getBaseExpandDir();
+
+    File resolveExpandPath(String nestPath);
 }

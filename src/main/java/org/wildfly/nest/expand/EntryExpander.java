@@ -20,14 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.unpack;
+package org.wildfly.nest.expand;
 
-import org.wildfly.nest.NestContext;
+import org.wildfly.nest.NestException;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface UnpackingContext extends NestContext {
+public interface EntryExpander<T> {
 
+    void process(EntryExpandContext<T> ctx) throws NestException;
 }

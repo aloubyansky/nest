@@ -30,7 +30,7 @@ package org.wildfly.nest;
 public class NestEntry {
 
     private EntryLocation nestLocation;
-    private final EntryLocation targetLocation;
+    private EntryLocation unpackLocation;
 
     public static NestEntry create() {
         return under(EntryLocation.DEFAULT);
@@ -49,7 +49,7 @@ public class NestEntry {
             throw new IllegalArgumentException("Nest location is null");
         }
         this.nestLocation = nestLocation;
-        this.targetLocation = targetLocation;
+        this.unpackLocation = targetLocation;
     }
 
     /**
@@ -77,8 +77,12 @@ public class NestEntry {
      *
      * @return  target location the entry should be unpacked to
      */
-    public EntryLocation getTargetLocation() {
-        return targetLocation;
+    public EntryLocation getExpandLocation() {
+        return unpackLocation;
+    }
+
+    public void setUnpackLocation(EntryLocation location) {
+        this.unpackLocation = location == null ? EntryLocation.DEFAULT : location;
     }
 
     @Override
@@ -86,7 +90,7 @@ public class NestEntry {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((nestLocation == null) ? 0 : nestLocation.hashCode());
-        result = prime * result + ((targetLocation == null) ? 0 : targetLocation.hashCode());
+        result = prime * result + ((unpackLocation == null) ? 0 : unpackLocation.hashCode());
         return result;
     }
 
@@ -104,10 +108,10 @@ public class NestEntry {
                 return false;
         } else if (!nestLocation.equals(other.nestLocation))
             return false;
-        if (targetLocation == null) {
-            if (other.targetLocation != null)
+        if (unpackLocation == null) {
+            if (other.unpackLocation != null)
                 return false;
-        } else if (!targetLocation.equals(other.targetLocation))
+        } else if (!unpackLocation.equals(other.unpackLocation))
             return false;
         return true;
     }

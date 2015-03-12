@@ -168,6 +168,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
                 entries.add(entry);
         }
     }
+
     private void addSourceLocation(EntryLocation el) {
         switch(sourceLocations.size()) {
             case 0:
