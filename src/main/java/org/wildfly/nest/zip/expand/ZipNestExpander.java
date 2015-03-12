@@ -53,9 +53,6 @@ public class ZipNestExpander implements NestExpander {
         chain = EntryExpanderChain.<ZipEntry>create().add(new ZipEntryExpander()).done();
     }
 
-    /* (non-Javadoc)
-     * @see org.wildfly.nest.unpack.NestExpander#expand(org.wildfly.nest.unpack.NestExpandContext)
-     */
     @Override
     public void expand(NestExpandContext ctx) throws NestException {
 
@@ -77,7 +74,7 @@ public class ZipNestExpander implements NestExpander {
                 }
             }
         } catch (IOException e) {
-            throw new NestException("Failed to unpack " + nestFile.getAbsolutePath(), e);
+            throw new NestException("Failed to expand " + nestFile.getAbsolutePath(), e);
         } finally {
             if(zipFile != null) {
                 IoUtils.safeClose(zipFile);

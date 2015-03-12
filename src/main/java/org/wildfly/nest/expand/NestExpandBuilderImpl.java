@@ -103,18 +103,18 @@ public class NestExpandBuilderImpl extends AbstractCommonBuilder<NestExpandBuild
     }
 
     @Override
-    public void unpack(File unpackDir) throws NestException {
+    public void expand(File baseExpandDir) throws NestException {
 
-        if(unpackDir == null) {
-            throw new IllegalArgumentException("dir is null");
+        if(baseExpandDir == null) {
+            throw new IllegalArgumentException("base expand dir is null");
         }
 
-        if(unpackDir.exists() && !unpackDir.isDirectory()) {
-            throw new IllegalArgumentException(unpackDir.getAbsolutePath() + " is not a directory");
+        if(baseExpandDir.exists() && !baseExpandDir.isDirectory()) {
+            throw new IllegalArgumentException(baseExpandDir.getAbsolutePath() + " is not a directory");
         }
 
-        this.baseExpandDir = unpackDir;
-        linkNestPaths(unpackDir);
+        this.baseExpandDir = baseExpandDir;
+        linkNestPaths(baseExpandDir);
 
         ZipNestExpander.init().expand(this);
     }

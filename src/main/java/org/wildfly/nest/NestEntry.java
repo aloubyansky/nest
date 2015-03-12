@@ -30,7 +30,7 @@ package org.wildfly.nest;
 public class NestEntry {
 
     private EntryLocation nestLocation;
-    private EntryLocation unpackLocation;
+    private EntryLocation expandLocation;
 
     public static NestEntry create() {
         return under(EntryLocation.DEFAULT);
@@ -40,16 +40,16 @@ public class NestEntry {
         return new NestEntry(nestLocation, null);
     }
 
-    public static NestEntry under(EntryLocation nestLocation, EntryLocation unpackToLocation) {
-        return new NestEntry(nestLocation, unpackToLocation);
+    public static NestEntry under(EntryLocation nestLocation, EntryLocation expandLocation) {
+        return new NestEntry(nestLocation, expandLocation);
     }
 
-    NestEntry(EntryLocation nestLocation, EntryLocation targetLocation) {
+    NestEntry(EntryLocation nestLocation, EntryLocation expandLocation) {
         if(nestLocation == null) {
             throw new IllegalArgumentException("Nest location is null");
         }
         this.nestLocation = nestLocation;
-        this.unpackLocation = targetLocation;
+        this.expandLocation = expandLocation;
     }
 
     /**
@@ -73,16 +73,16 @@ public class NestEntry {
     }
 
     /**
-     * Returns the target location the entry should be unpacked to.
+     * Returns the target location the entry should be expanded to.
      *
-     * @return  target location the entry should be unpacked to
+     * @return  target location the entry should be expanded to
      */
     public EntryLocation getExpandLocation() {
-        return unpackLocation;
+        return expandLocation;
     }
 
-    public void setUnpackLocation(EntryLocation location) {
-        this.unpackLocation = location == null ? EntryLocation.DEFAULT : location;
+    public void setExpandLocation(EntryLocation location) {
+        this.expandLocation = location == null ? EntryLocation.DEFAULT : location;
     }
 
     @Override
@@ -90,7 +90,7 @@ public class NestEntry {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((nestLocation == null) ? 0 : nestLocation.hashCode());
-        result = prime * result + ((unpackLocation == null) ? 0 : unpackLocation.hashCode());
+        result = prime * result + ((expandLocation == null) ? 0 : expandLocation.hashCode());
         return result;
     }
 
@@ -108,10 +108,10 @@ public class NestEntry {
                 return false;
         } else if (!nestLocation.equals(other.nestLocation))
             return false;
-        if (unpackLocation == null) {
-            if (other.unpackLocation != null)
+        if (expandLocation == null) {
+            if (other.expandLocation != null)
                 return false;
-        } else if (!unpackLocation.equals(other.unpackLocation))
+        } else if (!expandLocation.equals(other.expandLocation))
             return false;
         return true;
     }

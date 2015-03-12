@@ -75,53 +75,54 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
     }
 
     /**
-     * Links a nest path to the actual unpack path.
+     * Links a nest path to the expand path relative to the base expand directory.
      * If the nest path has already been linked, the existing link will be replaced
      * with the new one.
      *
-     * @param nestPath  unpack location name
-     * @param unpackPath  the path
+     * @param nestPath  nest path
+     * @param expandPath  expand path
      * @return  nest builder
      * @throws NestException
      */
     @Override
-    public T linkNestPathToUnpackPath(String nestPath, String unpackPath) throws NestException {
+    public T linkNestPathToExpandPath(String nestPath, String expandPath) throws NestException {
         if(nestPath == null) {
             throw new IllegalArgumentException("nestPath is null");
         }
-        if(unpackPath == null) {
+        if(expandPath == null) {
             throw new IllegalArgumentException("path is null");
         }
 
         nameNestLocation(nestPath, nestPath);
-        return linkNestLocation(nestPath, unpackPath);
+        return linkNestLocation(nestPath, expandPath);
     }
 
     /**
-     * Links an existing named nest location to the actual unpack path.
+     * Links an existing named nest location to the expand path
+     * relative to the base expand directory.
      *
-     * @param name  nest location name
-     * @param path  the path
+     * @param nestLocationName  nest location name
+     * @param expandPath  the path
      * @return  nest builder
      */
     @Override
-    public T linkNestLocation(String name, String path) throws NestException {
-        if(name == null) {
+    public T linkNestLocation(String nestLocationName, String expandPath) throws NestException {
+        if(nestLocationName == null) {
             throw new IllegalArgumentException("name is null");
         }
-        if(path == null) {
+        if(expandPath == null) {
             throw new IllegalArgumentException("path is null");
         }
-        final EntryLocation nestLocation = assertNestLocation(name);
+        final EntryLocation nestLocation = assertNestLocation(nestLocationName);
         if(nestLocation == null) {
-            throw new NestException("Unknown nest location " + name);
+            throw new NestException("Unknown nest location " + nestLocation);
         }
-        NestEntry entry = entries.get(name);
+        NestEntry entry = entries.get(nestLocation);
         if(entry == null) {
-            entry = NestEntry.under(nestLocation, EntryLocation.path(path));
+            entry = NestEntry.under(nestLocation, EntryLocation.path(expandPath));
             this.addEntry(entry);
         } else {
-            entry.setUnpackLocation(EntryLocation.path(path));
+            entry.setExpandLocation(EntryLocation.path(expandPath));
         }
         return (T)this;
     }
@@ -149,30 +150,30 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
     T linkNestToUnpackLocation(String nestLocationName, String unpackLocationName, String path); */
 
     /**
-     * Defines a new named (not linked) unpack location.
+     * Defines a new named (not linked) expand location.
      *
-     * @param name  unpack location name
+     * @param name  expand location name
      * @return  nest builder
      */
     @Override
-    public T nameUnpackLocation(String name) {
-        addTargetLocation(EntryLocation.name(name));
+    public T nameExpandLocation(String name) {
+        addExpandLocation(EntryLocation.name(name));
         return (T)this;
     }
 
     /**
-     * Defines a new named unpack location with the path relative to another
-     * named unpack location.
+     * Defines a new named expand location with the path relative to another
+     * named expand location.
      *
-     * @param name  new unpack location name
-     * @param unpackLocationName  unpack location relative to which the new
-     *                            unpack location should be resolved
-     * @param path  path relative to the specified named unpack location
+     * @param name  new expand location name
+     * @param expandLocationName  expand location relative to which the new
+     *                            expand location should be resolved
+     * @param path  path relative to the specified named expand location
      * @return
      */
     @Override
-    public T nameUnpackLocation(String name, String unpackLocationName, String path) {
-        addTargetLocation(EntryLocation.name(name, unpackLocationName, path));
+    public T nameExpandLocation(String name, String expandLocationName, String path) {
+        addExpandLocation(EntryLocation.name(name, expandLocationName, path));
         return (T)this;
     }
 
@@ -206,7 +207,7 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
      *
     T linkUnpackLocation(String name, String path);*/
 
-    public abstract class EntryUnpackToBuilder extends AbstractCommonBuilder<T> {
+    public abstract class EntryExpandToBuilder extends AbstractCommonBuilder<T> {
 
 
         /** TODO
@@ -219,30 +220,30 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
         T unpackTo(String path); */
 
         /**
-         * Specifies a named unpack location the previously added to
-         * the package entry should be unpacked to.
+         * Specifies a named expand location the previously added to
+         * the package entry should be expanded to.
          *
-         * @param namedUnpackLocation  named unpack location the previously
-         *          added to the package entry should be unpacked to
+         * @param expandLocationName  named expand location the previously
+         *          added to the nest package entry should be expanded to
          * @return  nest builder
          */
-        public T unpackToLocation(String namedUnpackLocation) {
-            getLastEntry().setUnpackLocation(EntryLocation.name(namedUnpackLocation));
+        public T expandToLocation(String expandLocationName) {
+            getLastEntry().setExpandLocation(EntryLocation.name(expandLocationName));
             return (T)AbstractCommonBuilder.this;
         }
 
         /**
-         * Specifies a relative to the named unpack location path
-         * the previously added to the package entry should be unpacked to.
+         * Specifies a relative to the named expand location path
+         * the previously added to the nest package entry should be expanded to.
          *
-         * @param namedUnpackLocation  named unpack location relative to which
-         *                             the target unpack path should be resolved
-         * @param relativePath  path relative to the specified named unpack
+         * @param expandLocationName  named expand location relative to which
+         *                            the target expand path should be resolved
+         * @param relativePath  path relative to the specified named expand
          *                      location
          * @return  nest builder
          */
-        public T unpackToLocation(String namedUnpackLocation, String relativePath) {
-            getLastEntry().setUnpackLocation(EntryLocation.name(namedUnpackLocation, relativePath));
+        public T expandToLocation(String expandLocationName, String relativePath) {
+            getLastEntry().setExpandLocation(EntryLocation.name(expandLocationName, relativePath));
             return (T)AbstractCommonBuilder.this;
         }
     }
@@ -262,7 +263,7 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
     protected EntryLocation assertExpandLocation(String name) throws NestException {
         final EntryLocation location = expandLocations.get(name);
         if(location == null) {
-            throw new NestException("Unpack location not found: " + name);
+            throw new NestException("Expand location not found: " + name);
         }
         return location;
     }
@@ -282,7 +283,7 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
         }
     }
 
-    protected void addTargetLocation(EntryLocation el) {
+    protected void addExpandLocation(EntryLocation el) {
         switch(expandLocations.size()) {
             case 0:
                 expandLocations = Collections.<String, EntryLocation>singletonMap(el.getName(), el);

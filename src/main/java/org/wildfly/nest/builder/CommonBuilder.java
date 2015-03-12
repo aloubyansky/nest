@@ -52,25 +52,26 @@ public interface CommonBuilder<T extends CommonBuilder<T>> {
     T nameNestLocation(String name, String nestLocationName, String path);
 
     /**
-     * Links an existing named nest location to the actual unpack path.
+     * Links an existing named nest location to the expand path
+     * relative to the base expand directory.
      *
      * @param name  nest location name
-     * @param path  the path
+     * @param expandPath  expand path
      * @return  nest builder
      */
-    T linkNestLocation(String name, String path) throws NestException;
+    T linkNestLocation(String name, String expandPath) throws NestException;
 
     /**
-     * Links a nest path to the actual unpack path.
+     * Links a nest path to the expand path relative to the base expand directory.
      * If the nest path has already been linked, the existing link will be replaced
      * with the new one.
      *
      * @param nestPath  path inside the nest relative to the root of the nest
-     * @param unpackPath  the actual unpack path
+     * @param expandPath  the expand path
      * @return  nest builder
      * @throws NestException
      */
-    T linkNestPathToUnpackPath(String nestPath, String unpackPath) throws NestException;
+    T linkNestPathToExpandPath(String nestPath, String expandPath) throws NestException;
 
     /** TODO
      * Links named nest location to the named unpack location.
@@ -93,24 +94,24 @@ public interface CommonBuilder<T extends CommonBuilder<T>> {
     T linkNestToUnpackLocation(String nestLocationName, String unpackLocationName, String path); */
 
     /**
-     * Defines a new named (not linked) unpack location.
+     * Defines a new named (not linked) expand location.
      *
-     * @param name  unpack location name
+     * @param name  expand location name
      * @return  nest builder
      */
-    T nameUnpackLocation(String name);
+    T nameExpandLocation(String name);
 
     /**
-     * Defines a new named unpack location with the path relative to another
-     * named unpack location.
+     * Defines a new named expand location with the path relative to another
+     * named expand location.
      *
-     * @param name  new unpack location name
-     * @param unpackLocationName  unpack location relative to which the new
-     *                            unpack location should be resolved
-     * @param path  path relative to the specified named unpack location
+     * @param name  new expand location name
+     * @param expandLocationName  expand location relative to which the new
+     *                            expand location should be resolved
+     * @param path  path relative to the specified named expand location
      * @return
      */
-    T nameUnpackLocation(String name, String unpackLocationName, String path);
+    T nameExpandLocation(String name, String expandLocationName, String path);
 
     /** TODO
      * Links a named unpack location to the actual path.

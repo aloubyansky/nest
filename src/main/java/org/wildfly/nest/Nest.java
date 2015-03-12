@@ -44,11 +44,11 @@ public class Nest {
     }
 
     /**
-     * Returns a new instance of a builder which can be used to unpack
+     * Returns a new instance of a builder which can be used to expand
      * an existing nest.
      *
      * @param nestFile  absolute path to the existing nest
-     * @return  builder to unpack the nest
+     * @return  builder to expand the nest
      */
     public static NestExpandBuilder open(File nestFile) {
         return NestExpandBuilder.FACTORY.create(nestFile);

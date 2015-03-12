@@ -52,7 +52,7 @@ class PackingTask {
 
     private Map<String, EntryLocation> sourceLocations = Collections.emptyMap();
     private Map<String, EntryLocation> nestLocations = Collections.emptyMap();
-    private Map<String, EntryLocation> unpackLocations = Collections.emptyMap();
+    private Map<String, EntryLocation> expandLocations = Collections.emptyMap();
 
     private final List<EntrySource> entries;
     private File zipTo;
@@ -80,11 +80,11 @@ class PackingTask {
         return this;
     }
 
-    PackingTask setUnpackLocations(Map<String, EntryLocation> unpackLocations) {
-        if(unpackLocations == null) {
-            throw new IllegalArgumentException("unpackLocations is null");
+    PackingTask setExpandLocations(Map<String, EntryLocation> expandLocations) {
+        if(expandLocations == null) {
+            throw new IllegalArgumentException("expandLocations is null");
         }
-        this.unpackLocations = unpackLocations;
+        this.expandLocations = expandLocations;
         return this;
     }
 

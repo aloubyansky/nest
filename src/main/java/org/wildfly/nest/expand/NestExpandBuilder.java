@@ -39,5 +39,11 @@ public interface NestExpandBuilder extends CommonBuilder<NestExpandBuilder> {
         }
     }
 
-    void unpack(File dir) throws NestException;
+    /**
+     * Expands the nest package into the specified directory.
+     *
+     * @param expandBaseDir  target expand directory
+     * @throws NestException
+     */
+    void expand(File expandBaseDir) throws NestException;
 }

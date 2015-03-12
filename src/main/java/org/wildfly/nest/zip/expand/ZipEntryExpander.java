@@ -38,11 +38,6 @@ import org.wildfly.nest.util.IoUtils;
  */
 public class ZipEntryExpander implements EntryExpander<ZipEntry> {
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.wildfly.nest.unpack.EntryExtractor#process(org.wildfly.nest.unpack.UnpackingContext)
-     */
     @Override
     public void process(EntryExpandContext<ZipEntry> ctx) throws NestException {
 

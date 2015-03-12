@@ -66,7 +66,7 @@ public class SourceLocationsBuildTestCase extends NestBuildTestBase {
             .addLocation("LOCATION_C")
             .add(testFile.getAbsolutePath())
             .linkSourceLocation("BASE_LOCATION_A", aBaseDir.getAbsolutePath())
-            .pack(testDir, "nest.zip");
+            .build(testDir, "nest.zip");
 
         final NestDir expectedTree = NestDir.root()
             .add(aDir)
@@ -76,9 +76,9 @@ public class SourceLocationsBuildTestCase extends NestBuildTestBase {
 
         assertZipContent(nestZip, expectedTree);
 
-        // test unpacking
-        final File unpackedNest = new File(testDir, "unpacked-nest");
-        Nest.open(nestZip).unpack(unpackedNest);
-        expectedTree.assertMatches(unpackedNest);
+        // test expanding
+        final File expandedNest = new File(testDir, "expanded-nest");
+        Nest.open(nestZip).expand(expandedNest);
+        expectedTree.assertMatches(expandedNest);
     }
 }

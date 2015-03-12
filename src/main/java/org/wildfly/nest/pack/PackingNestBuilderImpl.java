@@ -40,11 +40,11 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
 
     private Map<String, EntryLocation> sourceLocations = Collections.emptyMap();
     private Map<String, EntryLocation> nestLocations = Collections.emptyMap();
-    private Map<String, EntryLocation> unpackLocations = Collections.emptyMap();
+    private Map<String, EntryLocation> expandLocations = Collections.emptyMap();
 
     private List<EntrySource> entries = Collections.emptyList();
 
-    private final EntryUnpackToBuilder unpackToBuilder = new EntryUnpackToBuilderImpl();
+    private final EntryExpandToBuilder expandToBuilder = new EntryExpandToBuilderImpl();
     private final EntryUnderBuilder underBuilder = new EntryUnderBuilderImpl();
 
     @Override
@@ -78,14 +78,14 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
     }
 
     @Override
-    public PackingNestBuilder nameUnpackLocation(String name) {
-        addTargetLocation(EntryLocation.name(name));
+    public PackingNestBuilder nameExpandLocation(String name) {
+        addExpandLocation(EntryLocation.name(name));
         return this;
     }
 
     @Override
-    public PackingNestBuilder nameUnpackLocation(String name, String locationName, String path) {
-        addTargetLocation(EntryLocation.name(name, locationName, path));
+    public PackingNestBuilder nameExpandLocation(String name, String locationName, String path) {
+        addExpandLocation(EntryLocation.name(name, locationName, path));
         return this;
     }
 
@@ -119,7 +119,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
     }
 
     @Override
-    public File pack(File dir, String name) throws NestException {
+    public File build(File dir, String name) throws NestException {
         if(name == null) {
             throw new IllegalArgumentException("name is null");
         }
@@ -135,7 +135,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         PackingTask.forEntries(entries)
             .setSourceLocations(sourceLocations)
             .setNestLocations(nestLocations)
-            .setUnpackLocations(unpackLocations)
+            .setExpandLocations(expandLocations)
             .zipTo(zip)
             .run();
         return zip;
@@ -193,15 +193,15 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         }
     }
 
-    private void addTargetLocation(EntryLocation el) {
-        switch(unpackLocations.size()) {
+    private void addExpandLocation(EntryLocation el) {
+        switch(expandLocations.size()) {
             case 0:
-                unpackLocations = Collections.<String, EntryLocation>singletonMap(el.getName(), el);
+                expandLocations = Collections.<String, EntryLocation>singletonMap(el.getName(), el);
                 break;
             case 1:
-                unpackLocations = new HashMap<String, EntryLocation>(unpackLocations);
+                expandLocations = new HashMap<String, EntryLocation>(expandLocations);
             default:
-                unpackLocations.put(el.getName(), el);
+                expandLocations.put(el.getName(), el);
         }
     }
 
@@ -215,48 +215,48 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         return entries.get(entries.size() - 1);
     }
 
-    class EntryUnpackToBuilderImpl extends DelegatingPackingNestBuilder implements EntryUnpackToBuilder {
+    class EntryExpandToBuilderImpl extends DelegatingPackingNestBuilder implements EntryExpandToBuilder {
 
         @Override
-        public PackingNestBuilder unpackToLocation(String unpackLocation) {
+        public PackingNestBuilder expandToLocation(String expandLocation) {
             // TODO Auto-generated method stub
             //return PackingNestBuilderImpl.this;
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public PackingNestBuilder unpackToLocation(String unpackLocation, String relativePath) {
+        public PackingNestBuilder expandToLocation(String expandLocation, String relativePath) {
             // TODO Auto-generated method stub
             //return PackingNestBuilderImpl.this;
             throw new UnsupportedOperationException();
         }
     }
 
-    class EntryUnderBuilderImpl extends EntryUnpackToBuilderImpl implements EntryUnderBuilder {
+    class EntryUnderBuilderImpl extends EntryExpandToBuilderImpl implements EntryUnderBuilder {
 
         @Override
-        public EntryUnpackToBuilder under(String nestPath) {
+        public EntryExpandToBuilder under(String nestPath) {
             if(nestPath == null) {
                 throw new IllegalArgumentException("nestPath is null");
             }
             final EntrySource entrySource = getLastEntry();
             entrySource.getNestEntry().setNestLocation(EntryLocation.path(nestPath));
-            return unpackToBuilder;
+            return expandToBuilder;
         }
 
         @Override
-        public EntryUnpackToBuilder underLocation(String nestLocation) {
+        public EntryExpandToBuilder underLocation(String nestLocation) {
             if(nestLocation == null) {
                 throw new IllegalArgumentException("nestLocation is null");
             }
             final EntryLocation location = assertNestLocation(nestLocation);
             final EntrySource entrySource = getLastEntry();
             entrySource.getNestEntry().setNestLocation(location);
-            return unpackToBuilder;
+            return expandToBuilder;
         }
 
         @Override
-        public EntryUnpackToBuilder underLocation(String nestLocation, String relativePath) {
+        public EntryExpandToBuilder underLocation(String nestLocation, String relativePath) {
             if(nestLocation == null) {
                 throw new IllegalArgumentException("nestLocation is null");
             }
@@ -266,7 +266,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
             assertNestLocation(nestLocation);
             final EntrySource entrySource = getLastEntry();
             entrySource.getNestEntry().setNestLocation(EntryLocation.path(nestLocation, relativePath));
-            return unpackToBuilder;
+            return expandToBuilder;
         }
     }
 
@@ -298,13 +298,13 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         }
 
         @Override
-        public PackingNestBuilder nameUnpackLocation(String name) {
-            return PackingNestBuilderImpl.this.nameUnpackLocation(name);
+        public PackingNestBuilder nameExpandLocation(String name) {
+            return PackingNestBuilderImpl.this.nameExpandLocation(name);
         }
 
         @Override
-        public PackingNestBuilder nameUnpackLocation(String name, String locationName, String path) {
-            return PackingNestBuilderImpl.this.nameUnpackLocation(name, locationName, path);
+        public PackingNestBuilder nameExpandLocation(String name, String locationName, String path) {
+            return PackingNestBuilderImpl.this.nameExpandLocation(name, locationName, path);
         }
 
         @Override
@@ -323,8 +323,8 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         }
 
         @Override
-        public File pack(File dir, String name) throws NestException {
-            return PackingNestBuilderImpl.this.pack(dir, name);
+        public File build(File dir, String name) throws NestException {
+            return PackingNestBuilderImpl.this.build(dir, name);
         }
     }
 }

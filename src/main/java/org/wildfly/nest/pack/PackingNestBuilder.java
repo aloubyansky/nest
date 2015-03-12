@@ -127,24 +127,24 @@ public interface PackingNestBuilder {
     PackingNestBuilder linkNestToUnpackLocation(String nestLocationName, String unpackLocationName, String path); */
 
     /**
-     * Defines a new named (not linked) unpack location.
+     * Defines a new named (not linked) expand location.
      *
-     * @param name  unpack location name
+     * @param name  expand location name
      * @return  nest builder
      */
-    PackingNestBuilder nameUnpackLocation(String name);
+    PackingNestBuilder nameExpandLocation(String name);
 
     /**
-     * Defines a new named unpack location with the path relative to another
-     * named unpack location.
+     * Defines a new named expand location with the path relative to another
+     * named expand location.
      *
-     * @param name  new unpack location name
-     * @param unpackLocationName  unpack location relative to which the new
-     *                            unpack location should be resolved
-     * @param path  path relative to the specified named unpack location
+     * @param name  new expand location name
+     * @param expandLocationName  expand location relative to which the new
+     *                            expand location should be resolved
+     * @param path  path relative to the specified named expand location
      * @return
      */
-    PackingNestBuilder nameUnpackLocation(String name, String unpackLocationName, String path);
+    PackingNestBuilder nameExpandLocation(String name, String expandLocationName, String path);
 
     /** TODO
      * Links a named unpack location to the actual path.
@@ -197,9 +197,9 @@ public interface PackingNestBuilder {
      * @return  created package file
      * @throws NestException  in case packing failed
      */
-    File pack(File dir, String name) throws NestException;
+    File build(File dir, String name) throws NestException;
 
-    public interface EntryUnpackToBuilder extends PackingNestBuilder {
+    public interface EntryExpandToBuilder extends PackingNestBuilder {
 
         /** TODO
          * The actual path to which the previously added to the package entry
@@ -211,29 +211,29 @@ public interface PackingNestBuilder {
         PackingNestBuilder unpackTo(String path); */
 
         /**
-         * Specifies a named unpack location the previously added to
-         * the package entry should be unpacked to.
+         * Specifies a named expand location the previously added to
+         * the package entry should be expanded to.
          *
-         * @param namedUnpackLocation  named unpack location the previously
-         *          added to the package entry should be unpacked to
+         * @param namedExpandLocation  named expand location the previously
+         *          added to the package entry should be expanded to
          * @return  nest builder
          */
-        PackingNestBuilder unpackToLocation(String namedUnpackLocation);
+        PackingNestBuilder expandToLocation(String namedExpandLocation);
 
         /**
-         * Specifies a relative to the named unpack location path
-         * the previously added to the package entry should be unpacked to.
+         * Specifies a relative to the named expand location path
+         * the previously added to the package entry should be expanded to.
          *
-         * @param namedUnpackLocation  named unpack location relative to which
-         *                             the target unpack path should be resolved
-         * @param relativePath  path relative to the specified named unpack
+         * @param namedExpandLocation  named expand location relative to which
+         *                             the target expand path should be resolved
+         * @param relativePath  path relative to the specified named expand
          *                      location
          * @return  nest builder
          */
-        PackingNestBuilder unpackToLocation(String namedUnpackLocation, String relativePath);
+        PackingNestBuilder expandToLocation(String namedExpandLocation, String relativePath);
     }
 
-    public interface EntryUnderBuilder extends EntryUnpackToBuilder {
+    public interface EntryUnderBuilder extends EntryExpandToBuilder {
 
         /**
          * Specifies a path relative to the root of the package
@@ -242,7 +242,7 @@ public interface PackingNestBuilder {
          * @param nestPath  path relative to the root of the package
          * @return  nest builder
          */
-        EntryUnpackToBuilder under(String nestPath);
+        EntryExpandToBuilder under(String nestPath);
 
         /**
          * Specifies a named nest location at which the previously added to the
@@ -251,7 +251,7 @@ public interface PackingNestBuilder {
          * @param nestLocation  named nest location
          * @return  nest builder
          */
-        EntryUnpackToBuilder underLocation(String nestLocation);
+        EntryExpandToBuilder underLocation(String nestLocation);
 
         /**
          * Specifies a path relative to the named nest location at which
@@ -263,6 +263,6 @@ public interface PackingNestBuilder {
          *                      location
          * @return  nest builder
          */
-        EntryUnpackToBuilder underLocation(String nestLocation, String relativePath);
+        EntryExpandToBuilder underLocation(String nestLocation, String relativePath);
     }
 }

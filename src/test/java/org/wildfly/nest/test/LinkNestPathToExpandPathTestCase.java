@@ -35,7 +35,7 @@ import org.wildfly.nest.util.IoUtils;
  *
  * @author Alexey Loubyansky
  */
-public class NestPathToUnpackPathLinkingTestCase extends NestBuildTestBase {
+public class LinkNestPathToExpandPathTestCase extends NestBuildTestBase {
 
     @Test
     public void testMain() throws Exception {
@@ -55,7 +55,7 @@ public class NestPathToUnpackPathLinkingTestCase extends NestBuildTestBase {
                 .add(testFile.getAbsolutePath())
                 .add(aDir.getAbsolutePath())
                 .add(dDir.getAbsolutePath())
-                .pack(testDir, "nest.zip");
+                .build(testDir, "nest.zip");
 
         final NestDir expectedZipTree = NestDir.from(nestBase);
         assertZipContent(nestZip, expectedZipTree);
@@ -63,11 +63,11 @@ public class NestPathToUnpackPathLinkingTestCase extends NestBuildTestBase {
         // test expanding
         final File expandedNest = new File(testDir, "expanded-nest");
         Nest.open(nestZip)
-            .linkNestPathToUnpackPath("a/", "dir-a")
-            .linkNestPathToUnpackPath("a/a1TestFile.txt", "misc/a1TestFile.txt")
-            .linkNestPathToUnpackPath("a/b/", "dir-b")
-            .linkNestPathToUnpackPath("test.txt", "misc/root_test.txt")
-            .unpack(expandedNest);
+            .linkNestPathToExpandPath("a/", "dir-a")
+            .linkNestPathToExpandPath("a/a1TestFile.txt", "misc/a1TestFile.txt")
+            .linkNestPathToExpandPath("a/b/", "dir-b")
+            .linkNestPathToExpandPath("test.txt", "misc/root_test.txt")
+            .expand(expandedNest);
 
         final NestDir expandedTree = NestDir.root();
         expandedTree.newDir("misc")
