@@ -31,6 +31,7 @@ import org.wildfly.nest.EntryLocation;
 import org.wildfly.nest.NestContext;
 import org.wildfly.nest.NestEntry;
 import org.wildfly.nest.NestException;
+import org.wildfly.nest.util.ZipUtils;
 
 
 
@@ -95,6 +96,23 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
 
         nameNestLocation(nestPath, nestPath);
         return linkNestLocation(nestPath, expandPath);
+    }
+
+    @Override
+    public T linkNestPathToExpandPath(String nestLocationName, String relativePath, String expandPath) throws NestException {
+        if(nestLocationName == null) {
+            throw new IllegalArgumentException("nestLocationName is null");
+        }
+        if(relativePath == null) {
+            throw new IllegalArgumentException("relativePath is null");
+        }
+        if(expandPath == null) {
+            throw new IllegalArgumentException("path is null");
+        }
+
+        final String locationName = '$' + nestLocationName + ZipUtils.ENTRY_SEPARATOR + relativePath;
+        nameNestLocation(locationName, nestLocationName, relativePath);
+        return linkNestLocation(locationName, expandPath);
     }
 
     /**

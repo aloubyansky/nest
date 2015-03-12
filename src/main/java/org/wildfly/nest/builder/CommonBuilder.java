@@ -55,11 +55,11 @@ public interface CommonBuilder<T extends CommonBuilder<T>> {
      * Links an existing named nest location to the expand path
      * relative to the base expand directory.
      *
-     * @param name  nest location name
+     * @param nestLocationName  nest location name
      * @param expandPath  expand path
      * @return  nest builder
      */
-    T linkNestLocation(String name, String expandPath) throws NestException;
+    T linkNestLocation(String nestLocationName, String expandPath) throws NestException;
 
     /**
      * Links a nest path to the expand path relative to the base expand directory.
@@ -72,6 +72,21 @@ public interface CommonBuilder<T extends CommonBuilder<T>> {
      * @throws NestException
      */
     T linkNestPathToExpandPath(String nestPath, String expandPath) throws NestException;
+
+    /**
+     * Links a nest path relative to the specified named nest location to the expand path
+     * relative to the base expand directory.
+     * If the nest path has already been linked, the existing link will be replaced
+     * with the new one.
+     *
+     * @param nestLocationName  named nest location relative to which the nest path
+     *                          will be resolved
+     * @param relativePath  path relative to the specified named nest location
+     * @param expandPath  the expand path
+     * @return  nest builder
+     * @throws NestException
+     */
+    T linkNestPathToExpandPath(String nestLocationName, String relativePath, String expandPath) throws NestException;
 
     /** TODO
      * Links named nest location to the named unpack location.

@@ -35,7 +35,7 @@ import org.wildfly.nest.util.IoUtils;
  *
  * @author Alexey Loubyansky
  */
-public class LinkNestPathToExpandPathTestCase extends NestBuildTestBase {
+public class LinkNestLocationToExpandPathTestCase extends NestBuildTestBase {
 
     @Test
     public void testMain() throws Exception {
@@ -47,7 +47,8 @@ public class LinkNestPathToExpandPathTestCase extends NestBuildTestBase {
         Util.newFile(aDir, "a2TestFile.txt");
         final File bDir = IoUtils.mkdir(aDir, "b");
         Util.newFile(bDir, "b1TestFile.txt");
-        IoUtils.mkdir(aDir, "c");
+        final File cDir = IoUtils.mkdir(aDir, "c");
+        final File cFile = Util.newFile(cDir, "c.txt");
         final File dDir = IoUtils.mkdir(nestBase, "d");
         Util.newFile(dDir, "d.txt");
 
@@ -63,23 +64,30 @@ public class LinkNestPathToExpandPathTestCase extends NestBuildTestBase {
         // test expanding
         final File expandedNest = new File(testDir, "expanded-nest");
         Nest.open(nestZip)
-            .linkNestPathToExpandPath("a/", "dir_a")
-            .linkNestPathToExpandPath("a/a1TestFile.txt", "misc/a1TestFile.txt")
-            .linkNestPathToExpandPath("a/b/", "dir_b")
+            .nameNestLocation("DIR_A", "a/")
+            .nameNestLocation("DIR_B", "DIR_A", "b/")
+            .linkNestLocation("DIR_A", "dirs/dir_a")
+            .linkNestLocation("DIR_B", "dirs/dir_b")
+            .linkNestPathToExpandPath("DIR_A", "a1TestFile.txt", "misc/a1TestFile.txt")
+            .linkNestPathToExpandPath("DIR_A", "c/c.txt", "misc/c.txt")
             .linkNestPathToExpandPath("test.txt", "misc/root_test.txt")
             .expand(expandedNest);
 
         final NestDir expandedTree = NestDir.root();
         expandedTree.newDir("misc")
             .add(testFile, "root_test.txt")
-            .add(a1TestFile);
-        expandedTree.add(aDir, "dir_a", new FileFilter(){
+            .add(a1TestFile)
+            .add(cFile);
+        final NestDir dirs = expandedTree.newDir("dirs");
+        dirs.add(aDir, "dir_a", new FileFilter(){
             @Override
             public boolean accept(File pathname) {
                 final String name = pathname.getName();
-                return !name.equals(bDir.getName()) && !name.equals(a1TestFile.getName());
+                return !name.equals(bDir.getName()) &&
+                       !name.equals(a1TestFile.getName()) &&
+                       !name.equals(cFile.getName());
             }});
-        expandedTree.add(bDir, "dir_b");
+        dirs.add(bDir, "dir_b");
         expandedTree.add(dDir);
 
         expandedTree.assertMatches(expandedNest);
