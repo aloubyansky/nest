@@ -62,6 +62,28 @@ public interface CommonBuilder<T extends CommonBuilder<T>> {
     T linkNestLocation(String nestLocationName, String expandPath) throws NestException;
 
     /**
+     * Links named nest location to the path relative to a named expand location.
+     *
+     * @param nestLocationName  nest location name
+     * @param expandLocationName  expand location name relative to which
+     *                            the expand path will be resolved
+     * @param relativePath  path relative to the specified expand location
+     * @return  nest builder
+     * @throws NestException
+     */
+    T linkNestLocation(String nestLocationName, String expandLocationName, String relativePath) throws NestException;
+
+    /**
+     * Links named nest location to the named expand location.
+     *
+     * @param nestLocationName  nest location name
+     * @param expandLocationName  unpack location name
+     * @return  nest builder
+     * @throws NestException
+     */
+    T linkNestToExpandLocation(String nestLocationName, String expandLocationName) throws NestException;
+
+    /**
      * Links a nest path to the expand path relative to the base expand directory.
      * If the nest path has already been linked, the existing link will be replaced
      * with the new one.
@@ -71,7 +93,7 @@ public interface CommonBuilder<T extends CommonBuilder<T>> {
      * @return  nest builder
      * @throws NestException
      */
-    T linkNestPathToExpandPath(String nestPath, String expandPath) throws NestException;
+    T linkNestPath(String nestPath, String expandPath) throws NestException;
 
     /**
      * Links a nest path relative to the specified named nest location to the expand path
@@ -81,32 +103,27 @@ public interface CommonBuilder<T extends CommonBuilder<T>> {
      *
      * @param nestLocationName  named nest location relative to which the nest path
      *                          will be resolved
-     * @param relativePath  path relative to the specified named nest location
+     * @param relativeNestPath  path relative to the specified named nest location
      * @param expandPath  the expand path
      * @return  nest builder
      * @throws NestException
      */
-    T linkNestPathToExpandPath(String nestLocationName, String relativePath, String expandPath) throws NestException;
+    T linkNestPath(String nestLocationName, String relativeNestPath, String expandPath) throws NestException;
 
-    /** TODO
-     * Links named nest location to the named unpack location.
+    /**
+     * Links a nest path relative to the specified named nest location to the expand path
+     * relative to the specified named expand location.
+     * If the nest path has already been linked, the existing link will be replaced
+     * with the new one.
      *
-     * @param nestLocationName  nest location name
-     * @param unpackLocationName  unpack location name
+     * @param nestLocationName  named nest location relative to which the nest path will be resolved
+     * @param nestRelativePath  path relative to the specified named nest location
+     * @param expandLocation  named expand path relative to which the expand path will be resolved
+     * @param expandRelativePath  expand path relative to the specified named expand location
      * @return  nest builder
-     *
-    T linkNestToUnpackLocation(String nestLocationName, String unpackLocationName); */
-
-    /** TODO
-     * Links named nest location to the path relative to a named unpack location.
-     *
-     * @param nestLocationName  nest location name
-     * @param unpackLocationName  unpack location name relative to which
-     *                            the link should be created
-     * @param path  path relative to the specified unpack location
-     * @return  nest builder
-     *
-    T linkNestToUnpackLocation(String nestLocationName, String unpackLocationName, String path); */
+     * @throws NestException
+     */
+    T linkNestPath(String nestLocationName, String nestRelativePath, String expandLocation, String expandRelativePath) throws NestException;
 
     /**
      * Defines a new named (not linked) expand location.

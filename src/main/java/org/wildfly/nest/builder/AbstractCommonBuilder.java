@@ -86,7 +86,7 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
      * @throws NestException
      */
     @Override
-    public T linkNestPathToExpandPath(String nestPath, String expandPath) throws NestException {
+    public T linkNestPath(String nestPath, String expandPath) throws NestException {
         if(nestPath == null) {
             throw new IllegalArgumentException("nestPath is null");
         }
@@ -99,7 +99,7 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
     }
 
     @Override
-    public T linkNestPathToExpandPath(String nestLocationName, String relativePath, String expandPath) throws NestException {
+    public T linkNestPath(String nestLocationName, String relativePath, String expandPath) throws NestException {
         if(nestLocationName == null) {
             throw new IllegalArgumentException("nestLocationName is null");
         }
@@ -113,6 +113,26 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
         final String locationName = '$' + nestLocationName + ZipUtils.ENTRY_SEPARATOR + relativePath;
         nameNestLocation(locationName, nestLocationName, relativePath);
         return linkNestLocation(locationName, expandPath);
+    }
+
+    @Override
+    public T linkNestPath(String nestLocationName, String relativeNestPath, String expandLocationName, String relativeExpandPath) throws NestException {
+        if(nestLocationName == null) {
+            throw new IllegalArgumentException("nestLocationName is null");
+        }
+        if(relativeNestPath == null) {
+            throw new IllegalArgumentException("relativeNestePath is null");
+        }
+        if(expandLocationName == null) {
+            throw new IllegalArgumentException("expandLocationName is null");
+        }
+        if(relativeExpandPath == null) {
+            throw new IllegalArgumentException("relativeExpandPath is null");
+        }
+
+        final String locationName = '$' + nestLocationName + ZipUtils.ENTRY_SEPARATOR + relativeNestPath;
+        nameNestLocation(locationName, nestLocationName, relativeNestPath);
+        return linkNestLocation(locationName, expandLocationName, relativeExpandPath);
     }
 
     /**
@@ -132,9 +152,6 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
             throw new IllegalArgumentException("path is null");
         }
         final EntryLocation nestLocation = assertNestLocation(nestLocationName);
-        if(nestLocation == null) {
-            throw new NestException("Unknown nest location " + nestLocation);
-        }
         NestEntry entry = entries.get(nestLocation);
         if(entry == null) {
             entry = NestEntry.under(nestLocation, EntryLocation.path(expandPath));
@@ -145,27 +162,48 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
         return (T)this;
     }
 
-    /** TODO
-     * Links named nest location to the named unpack location.
-     *
-     * @param nestLocationName  nest location name
-     * @param unpackLocationName  unpack location name
-     * @return  nest builder
-     *
     @Override
-    T linkNestToUnpackLocation(String nestLocationName, String unpackLocationName); */
+    public T linkNestLocation(String nestLocationName, String expandLocationName, String relativeExpandPath) throws NestException {
+        if(nestLocationName == null) {
+            throw new IllegalArgumentException("nestLocationName is null");
+        }
+        if(expandLocationName == null) {
+            throw new IllegalArgumentException("expandLocationName is null");
+        }
+        if(relativeExpandPath == null) {
+            throw new IllegalArgumentException("relativeExpandPath is null");
+        }
+        final EntryLocation nestLocation = assertNestLocation(nestLocationName);
+        assertExpandLocation(expandLocationName);
+        NestEntry entry = entries.get(nestLocation);
+        if(entry == null) {
+            entry = NestEntry.under(nestLocation, EntryLocation.path(expandLocationName, relativeExpandPath));
+            this.addEntry(entry);
+        } else {
+            entry.setExpandLocation(EntryLocation.path(expandLocationName, relativeExpandPath));
+        }
+        return (T)this;
+    }
 
-    /** TODO
-     * Links named nest location to the path relative to a named unpack location.
-     *
-     * @param nestLocationName  nest location name
-     * @param unpackLocationName  unpack location name relative to which
-     *                            the link should be created
-     * @param path  path relative to the specified unpack location
-     * @return  nest builder
-     *
     @Override
-    T linkNestToUnpackLocation(String nestLocationName, String unpackLocationName, String path); */
+    public T linkNestToExpandLocation(String nestLocationName, String expandLocationName) throws NestException {
+        if(nestLocationName == null) {
+            throw new IllegalArgumentException("nestLocationName is null");
+        }
+        if(expandLocationName == null) {
+            throw new IllegalArgumentException("expandLocationName is null");
+        }
+        final EntryLocation nestLocation = assertNestLocation(nestLocationName);
+        final EntryLocation expandLocation = assertExpandLocation(expandLocationName);
+        NestEntry entry = entries.get(nestLocation);
+        if(entry == null) {
+            entry = NestEntry.under(nestLocation, expandLocation);
+            this.addEntry(entry);
+        } else {
+            entry.setExpandLocation(expandLocation);
+        }
+        return (T)this;
+    }
 
     /**
      * Defines a new named (not linked) expand location.
