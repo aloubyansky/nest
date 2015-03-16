@@ -144,17 +144,4 @@ public interface CommonBuilder<T extends CommonBuilder<T>> {
      * @return
      */
     T nameExpandLocation(String name, String expandLocationName, String path);
-
-    /** TODO
-     * Links a named unpack location to the actual path.
-     * If the unpack location name has been defined, the existing named unpack
-     * location is linked to the path.
-     * Otherwise, the method will define a new named unpack location and link it
-     * to the path.
-     *
-     * @param name  unpack location name
-     * @param path  the path
-     * @return  nest builder
-     *
-    T linkUnpackLocation(String name, String path);*/
 }

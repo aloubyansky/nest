@@ -61,6 +61,34 @@ public class NestExpandBuilderImpl extends AbstractCommonBuilder<NestExpandBuild
         this.nestFile = nestFile;
     }
 
+    @Override
+    public NestExpandBuilder linkExpandLocation(String expandLocationName, String expandPath) throws NestException {
+        if(expandLocationName == null) {
+            throw new IllegalArgumentException("expandLocationName is null");
+        }
+        if(expandPath == null) {
+            throw new IllegalArgumentException("expandPath is null");
+        }
+        final EntryLocation entryLocation = assertExpandLocation(expandLocationName);
+        entryLocation.link(expandPath);
+        return this;
+    }
+
+    @Override
+    public NestExpandBuilder linkExpandLocation(String expandLocationName, String relativeToName, String expandPath) throws NestException {
+        if(expandLocationName == null) {
+            throw new IllegalArgumentException("expandLocationName is null");
+        }
+        if(relativeToName == null) {
+            throw new IllegalArgumentException("relativeToName is null");
+        }
+        if(expandPath == null) {
+            throw new IllegalArgumentException("expandPath is null");
+        }
+        final EntryLocation entryLocation = assertExpandLocation(expandLocationName);
+        entryLocation.link(relativeToName, expandPath);
+        return this;
+    }
 
     @Override
     public File getNestFile() {

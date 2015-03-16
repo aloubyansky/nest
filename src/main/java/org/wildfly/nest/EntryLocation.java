@@ -1,5 +1,7 @@
 package org.wildfly.nest;
 
+import org.wildfly.nest.util.ZipUtils;
+
 
 /*
  * JBoss, Home of Professional Open Source.
@@ -37,9 +39,9 @@ public class EntryLocation {
     /** name/alias for this location, may be null */
     private final String name;
     /** name/alias of the location relative to which this location should be resolved, may be null */
-    private final String relativeToName;
+    private String relativeToName;
     /** the path is absolute if relativeToName is null, otherwise the path is relative, may be null */
-    private final String path;
+    private String path;
 
     /**
      * Creates a new location based on the absolute path passed in as an argument.
@@ -164,6 +166,60 @@ public class EntryLocation {
         return path;
     }
 
+    /**
+     * Links this location to the given path.
+     * If the location has already been linked to an actual path or relative to another
+     * named location, the method will throw an exception.
+     *
+     * @param path  the path to link this location to
+     * @throws NestException
+     */
+    public void link(String path) throws NestException {
+        if(path == null) {
+            throw new NestException("path is null");
+        }
+        assertNotLinked();
+        this.path = path;
+    }
+
+    /**
+     * Links this location to a path relative to the specified named location.
+     * If the location has already been linked to an actual path or relative to another
+     * named location, the method will throw an exception.
+     *
+     * @param relativeToName
+     * @param path
+     * @throws NestException
+     */
+    public void link(String relativeToName, String path) throws NestException {
+        if(relativeToName == null) {
+            throw new NestException("relativeToName is null");
+        }
+        if(path == null) {
+            throw new NestException("path is null");
+        }
+        assertNotLinked();
+        this.relativeToName = relativeToName;
+        this.path = path;
+    }
+
+    /**
+     * @throws NestException
+     */
+    private void assertNotLinked() throws NestException {
+        if(this.path != null || this.relativeToName != null) {
+            final StringBuilder buf = new StringBuilder("Location has already been linked to ");
+            if(relativeToName == null) {
+                buf.append(this.path);
+            } else {
+                buf.append('$').append(relativeToName);
+                if(this.path != null) {
+                    buf.append(ZipUtils.ENTRY_SEPARATOR).append(this.path);
+                }
+            }
+            throw new NestException(buf.toString());
+        }
+    }
 
     @Override
     public int hashCode() {

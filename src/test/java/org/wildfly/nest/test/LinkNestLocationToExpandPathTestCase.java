@@ -66,11 +66,16 @@ public class LinkNestLocationToExpandPathTestCase extends NestBuildTestBase {
         Nest.open(nestZip)
             .nameNestLocation("DIR_A", "a/")
             .nameNestLocation("DIR_B", "DIR_A", "b/")
+            .nameNestLocation("DIR_C", "a/c/")
+            .nameExpandLocation("EXPAND_DIRS")
+            .nameExpandLocation("EXPAND_C", "EXPAND_DIRS", "dir_c")
             .linkNestLocation("DIR_A", "dirs/dir_a")
-            .linkNestLocation("DIR_B", "dirs/dir_b")
+            .linkNestLocation("DIR_B", "EXPAND_DIRS", "dir_b")
+            .linkNestToExpandLocation("DIR_C", "EXPAND_C")
             .linkNestPath("DIR_A", "a1TestFile.txt", "misc/a1TestFile.txt")
             .linkNestPath("DIR_A", "c/c.txt", "misc/c.txt")
             .linkNestPath("test.txt", "misc/root_test.txt")
+            .linkExpandLocation("EXPAND_DIRS", "dirs")
             .expand(expandedNest);
 
         final NestDir expandedTree = NestDir.root();
@@ -84,10 +89,12 @@ public class LinkNestLocationToExpandPathTestCase extends NestBuildTestBase {
             public boolean accept(File pathname) {
                 final String name = pathname.getName();
                 return !name.equals(bDir.getName()) &&
+                       !name.equals(cDir.getName()) &&
                        !name.equals(a1TestFile.getName()) &&
                        !name.equals(cFile.getName());
             }});
         dirs.add(bDir, "dir_b");
+        dirs.newDir("dir_c");
         expandedTree.add(dDir);
 
         expandedTree.assertMatches(expandedNest);
