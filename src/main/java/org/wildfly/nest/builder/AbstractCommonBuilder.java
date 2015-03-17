@@ -75,134 +75,31 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
         return (T)this;
     }
 
-    /**
-     * Links a nest path to the expand path relative to the base expand directory.
-     * If the nest path has already been linked, the existing link will be replaced
-     * with the new one.
-     *
-     * @param nestPath  nest path
-     * @param expandPath  expand path
-     * @return  nest builder
-     * @throws NestException
-     */
     @Override
-    public T linkNestPath(String nestPath, String expandPath) throws NestException {
+    public LinkBuilder<T> linkNestLocation(String locationName) throws NestException {
+        return new LinkLocationImpl(locationName);
+    }
+
+    @Override
+    public LinkBuilder<T> linkNestPath(String nestLocationName, String nestRelativePath) throws NestException {
+        if(nestLocationName == null) {
+            throw new IllegalArgumentException("nestLocationName is null");
+        }
+        if(nestRelativePath == null) {
+            throw new IllegalArgumentException("nestRelativePath is null");
+        }
+        final String locationName = '$' + nestLocationName + ZipUtils.ENTRY_SEPARATOR + nestRelativePath;
+        nameNestLocation(locationName, nestLocationName, nestRelativePath);
+        return linkNestLocation(locationName);
+    }
+
+    @Override
+    public LinkBuilder<T> linkNestPath(String nestPath) throws NestException {
         if(nestPath == null) {
             throw new IllegalArgumentException("nestPath is null");
         }
-        if(expandPath == null) {
-            throw new IllegalArgumentException("path is null");
-        }
-
         nameNestLocation(nestPath, nestPath);
-        return linkNestLocation(nestPath, expandPath);
-    }
-
-    @Override
-    public T linkNestPath(String nestLocationName, String relativePath, String expandPath) throws NestException {
-        if(nestLocationName == null) {
-            throw new IllegalArgumentException("nestLocationName is null");
-        }
-        if(relativePath == null) {
-            throw new IllegalArgumentException("relativePath is null");
-        }
-        if(expandPath == null) {
-            throw new IllegalArgumentException("path is null");
-        }
-
-        final String locationName = '$' + nestLocationName + ZipUtils.ENTRY_SEPARATOR + relativePath;
-        nameNestLocation(locationName, nestLocationName, relativePath);
-        return linkNestLocation(locationName, expandPath);
-    }
-
-    @Override
-    public T linkNestPath(String nestLocationName, String relativeNestPath, String expandLocationName, String relativeExpandPath) throws NestException {
-        if(nestLocationName == null) {
-            throw new IllegalArgumentException("nestLocationName is null");
-        }
-        if(relativeNestPath == null) {
-            throw new IllegalArgumentException("relativeNestePath is null");
-        }
-        if(expandLocationName == null) {
-            throw new IllegalArgumentException("expandLocationName is null");
-        }
-        if(relativeExpandPath == null) {
-            throw new IllegalArgumentException("relativeExpandPath is null");
-        }
-
-        final String locationName = '$' + nestLocationName + ZipUtils.ENTRY_SEPARATOR + relativeNestPath;
-        nameNestLocation(locationName, nestLocationName, relativeNestPath);
-        return linkNestLocation(locationName, expandLocationName, relativeExpandPath);
-    }
-
-    /**
-     * Links an existing named nest location to the expand path
-     * relative to the base expand directory.
-     *
-     * @param nestLocationName  nest location name
-     * @param expandPath  the path
-     * @return  nest builder
-     */
-    @Override
-    public T linkNestLocation(String nestLocationName, String expandPath) throws NestException {
-        if(nestLocationName == null) {
-            throw new IllegalArgumentException("name is null");
-        }
-        if(expandPath == null) {
-            throw new IllegalArgumentException("path is null");
-        }
-        final EntryLocation nestLocation = assertNestLocation(nestLocationName);
-        NestEntry entry = entries.get(nestLocation);
-        if(entry == null) {
-            entry = NestEntry.under(nestLocation, EntryLocation.path(expandPath));
-            this.addEntry(entry);
-        } else {
-            entry.setExpandLocation(EntryLocation.path(expandPath));
-        }
-        return (T)this;
-    }
-
-    @Override
-    public T linkNestLocation(String nestLocationName, String expandLocationName, String relativeExpandPath) throws NestException {
-        if(nestLocationName == null) {
-            throw new IllegalArgumentException("nestLocationName is null");
-        }
-        if(expandLocationName == null) {
-            throw new IllegalArgumentException("expandLocationName is null");
-        }
-        if(relativeExpandPath == null) {
-            throw new IllegalArgumentException("relativeExpandPath is null");
-        }
-        final EntryLocation nestLocation = assertNestLocation(nestLocationName);
-        assertExpandLocation(expandLocationName);
-        NestEntry entry = entries.get(nestLocation);
-        if(entry == null) {
-            entry = NestEntry.under(nestLocation, EntryLocation.path(expandLocationName, relativeExpandPath));
-            this.addEntry(entry);
-        } else {
-            entry.setExpandLocation(EntryLocation.path(expandLocationName, relativeExpandPath));
-        }
-        return (T)this;
-    }
-
-    @Override
-    public T linkNestToExpandLocation(String nestLocationName, String expandLocationName) throws NestException {
-        if(nestLocationName == null) {
-            throw new IllegalArgumentException("nestLocationName is null");
-        }
-        if(expandLocationName == null) {
-            throw new IllegalArgumentException("expandLocationName is null");
-        }
-        final EntryLocation nestLocation = assertNestLocation(nestLocationName);
-        final EntryLocation expandLocation = assertExpandLocation(expandLocationName);
-        NestEntry entry = entries.get(nestLocation);
-        if(entry == null) {
-            entry = NestEntry.under(nestLocation, expandLocation);
-            this.addEntry(entry);
-        } else {
-            entry.setExpandLocation(expandLocation);
-        }
-        return (T)this;
+        return linkNestLocation(nestPath);
     }
 
     /**
@@ -375,5 +272,73 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
     protected NestEntry getLastEntry() {
         assert !entries.isEmpty() : "there are no entries";
         return entries.get(entries.size() - 1);
+    }
+
+    class LinkLocationImpl implements LinkBuilder<T> {
+
+        final EntryLocation location;
+
+        LinkLocationImpl(String locationName) throws NestException {
+            if(locationName == null) {
+                throw new IllegalArgumentException("name is null");
+            }
+            location = assertNestLocation(locationName);
+        }
+
+        @Override
+        public T toPath(String path) throws NestException {
+
+            if(path == null) {
+                throw new IllegalArgumentException("path is null");
+            }
+            NestEntry entry = entries.get(location.getName());
+            if(entry == null) {
+                entry = NestEntry.under(location, EntryLocation.path(path));
+                AbstractCommonBuilder.this.addEntry(entry);
+            } else {
+                entry.setExpandLocation(EntryLocation.path(path));
+            }
+
+            return (T)AbstractCommonBuilder.this;
+        }
+
+        @Override
+        public T toPath(String locationName, String path) throws NestException {
+
+            if(locationName == null) {
+                throw new IllegalArgumentException("locationName is null");
+            }
+            if(path == null) {
+                throw new IllegalArgumentException("path is null");
+            }
+            assertExpandLocation(locationName);
+            NestEntry entry = entries.get(location.getName());
+            if(entry == null) {
+                entry = NestEntry.under(location, EntryLocation.path(locationName, path));
+                AbstractCommonBuilder.this.addEntry(entry);
+            } else {
+                entry.setExpandLocation(EntryLocation.path(locationName, path));
+            }
+
+            return (T)AbstractCommonBuilder.this;
+        }
+
+        @Override
+        public T toLocation(String name) throws NestException {
+
+            if(name == null) {
+                throw new IllegalArgumentException("name is null");
+            }
+            final EntryLocation expandLocation = assertExpandLocation(name);
+            NestEntry entry = entries.get(location.getName());
+            if(entry == null) {
+                entry = NestEntry.under(location, expandLocation);
+                AbstractCommonBuilder.this.addEntry(entry);
+            } else {
+                entry.setExpandLocation(expandLocation);
+            }
+
+            return (T)AbstractCommonBuilder.this;
+        }
     }
 }

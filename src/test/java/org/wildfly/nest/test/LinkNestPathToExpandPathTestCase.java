@@ -63,10 +63,10 @@ public class LinkNestPathToExpandPathTestCase extends NestBuildTestBase {
         // test expanding
         final File expandedNest = new File(testDir, "expanded-nest");
         Nest.open(nestZip)
-            .linkNestPath("a/", "dir_a")
-            .linkNestPath("a/a1TestFile.txt", "misc/a1TestFile.txt")
-            .linkNestPath("a/b/", "dir_b")
-            .linkNestPath("test.txt", "misc/root_test.txt")
+            .linkNestPath("a/").toPath("dir_a")
+            .linkNestPath("a/a1TestFile.txt").toPath("misc/a1TestFile.txt")
+            .linkNestPath("a/b/").toPath("dir_b")
+            .linkNestPath("test.txt").toPath("misc/root_test.txt")
             .expand(expandedNest);
 
         final NestDir expandedTree = NestDir.root();

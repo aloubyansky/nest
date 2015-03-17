@@ -69,12 +69,16 @@ public class LinkNestLocationToExpandPathTestCase extends NestBuildTestBase {
             .nameNestLocation("DIR_C", "a/c/")
             .nameExpandLocation("EXPAND_DIRS")
             .nameExpandLocation("EXPAND_C", "EXPAND_DIRS", "dir_c")
-            .linkNestLocation("DIR_A", "dirs/dir_a")
-            .linkNestLocation("DIR_B", "EXPAND_DIRS", "dir_b")
-            .linkNestToExpandLocation("DIR_C", "EXPAND_C")
-            .linkNestPath("DIR_A", "a1TestFile.txt", "misc/a1TestFile.txt")
-            .linkNestPath("DIR_A", "c/c.txt", "misc/c.txt")
-            .linkNestPath("test.txt", "misc/root_test.txt")
+
+            .linkNestLocation("DIR_A").toPath("dirs/dir_a")
+            .linkNestLocation("DIR_B").toPath("EXPAND_DIRS", "dir_b")
+            .linkNestLocation("DIR_C").toLocation("EXPAND_C")
+
+            .linkNestPath("DIR_A", "a1TestFile.txt").toPath("misc/a1TestFile.txt")
+            .linkNestPath("DIR_A", "c/c.txt").toPath("misc/c.txt")
+
+            .linkNestPath("test.txt").toPath("misc/root_test.txt")
+
             .linkExpandLocation("EXPAND_DIRS", "dirs")
             .expand(expandedNest);
 

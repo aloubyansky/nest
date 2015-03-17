@@ -195,9 +195,9 @@ public class EntryLocation {
         if(relativeToName == null) {
             throw new NestException("relativeToName is null");
         }
-        if(path == null) {
-            throw new NestException("path is null");
-        }
+//        if(path == null) {
+//            throw new NestException("path is null");
+//        }
         assertNotLinked();
         this.relativeToName = relativeToName;
         this.path = path;
