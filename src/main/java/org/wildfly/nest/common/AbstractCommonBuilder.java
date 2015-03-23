@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.builder;
+package org.wildfly.nest.common;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -293,7 +293,7 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
             }
             NestEntry entry = entries.get(location.getName());
             if(entry == null) {
-                entry = NestEntry.under(location, EntryLocation.path(path));
+                entry = NestEntry.create(location, EntryLocation.path(path));
                 AbstractCommonBuilder.this.addEntry(entry);
             } else {
                 entry.setExpandLocation(EntryLocation.path(path));
@@ -314,7 +314,7 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
             assertExpandLocation(locationName);
             NestEntry entry = entries.get(location.getName());
             if(entry == null) {
-                entry = NestEntry.under(location, EntryLocation.path(locationName, path));
+                entry = NestEntry.create(location, EntryLocation.path(locationName, path));
                 AbstractCommonBuilder.this.addEntry(entry);
             } else {
                 entry.setExpandLocation(EntryLocation.path(locationName, path));
@@ -332,7 +332,7 @@ public abstract class AbstractCommonBuilder<T extends CommonBuilder<T>> implemen
             final EntryLocation expandLocation = assertExpandLocation(name);
             NestEntry entry = entries.get(location.getName());
             if(entry == null) {
-                entry = NestEntry.under(location, expandLocation);
+                entry = NestEntry.create(location, expandLocation);
                 AbstractCommonBuilder.this.addEntry(entry);
             } else {
                 entry.setExpandLocation(expandLocation);

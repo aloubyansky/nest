@@ -20,13 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.pack;
+package org.wildfly.nest.build;
 
+import java.io.File;
+
+import org.wildfly.nest.NestException;
 
 /**
- * @author Alexey Loubyansky
  *
+ * @author Alexey Loubyansky
  */
-public interface WritingChain extends Iterable<SectionWriter> {
+public interface NestBuilder {
 
+    File build(NestBuildContext ctx) throws NestException;
 }

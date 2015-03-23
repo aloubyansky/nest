@@ -24,8 +24,8 @@ package org.wildfly.nest;
 
 import java.io.File;
 
-import org.wildfly.nest.expand.NestExpandBuilder;
-import org.wildfly.nest.pack.PackingNestBuilder;
+import org.wildfly.nest.build.NestBuildTask;
+import org.wildfly.nest.expand.NestExpandTask;
 
 /**
  *
@@ -39,8 +39,8 @@ public class Nest {
      *
      * @return  builder to build a nest
      */
-    public static PackingNestBuilder create() {
-        return PackingNestBuilder.FACTORY.create();
+    public static NestBuildTask create() {
+        return NestBuildTask.FACTORY.create();
     }
 
     /**
@@ -50,7 +50,7 @@ public class Nest {
      * @param nestFile  absolute path to the existing nest
      * @return  builder to expand the nest
      */
-    public static NestExpandBuilder open(File nestFile) {
-        return NestExpandBuilder.FACTORY.create(nestFile);
+    public static NestExpandTask open(File nestFile) {
+        return NestExpandTask.FACTORY.create(nestFile);
     }
 }

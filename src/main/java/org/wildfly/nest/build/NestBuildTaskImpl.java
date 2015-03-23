@@ -20,10 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.pack;
+package org.wildfly.nest.build;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -31,60 +32,63 @@ import java.util.Map;
 
 import org.wildfly.nest.EntryLocation;
 import org.wildfly.nest.NestException;
+import org.wildfly.nest.zip.build.ZipNestBuilder;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-class PackingNestBuilderImpl implements PackingNestBuilder {
+class NestBuildTaskImpl implements NestBuildTask, NestBuildContext {
 
     private Map<String, EntryLocation> sourceLocations = Collections.emptyMap();
     private Map<String, EntryLocation> nestLocations = Collections.emptyMap();
     private Map<String, EntryLocation> expandLocations = Collections.emptyMap();
 
-    private List<EntrySource> entries = Collections.emptyList();
+    private List<NestEntrySource> entries = Collections.emptyList();
 
     private final EntryExpandToBuilder expandToBuilder = new EntryExpandToBuilderImpl();
     private final EntryUnderBuilder underBuilder = new EntryUnderBuilderImpl();
 
+    private File nestFile;
+
     @Override
-    public PackingNestBuilder nameSourceLocation(String name) {
+    public NestBuildTask nameSourceLocation(String name) {
         addSourceLocation(EntryLocation.name(name));
         return this;
     }
 
     @Override
-    public PackingNestBuilder nameSourceLocation(String name, String locationName, String path) {
+    public NestBuildTask nameSourceLocation(String name, String locationName, String path) {
         addSourceLocation(EntryLocation.name(name, locationName, path));
         return this;
     }
 
     @Override
-    public PackingNestBuilder linkSourceLocation(String name, String path) {
+    public NestBuildTask linkSourceLocation(String name, String path) {
         addSourceLocation(EntryLocation.name(name, path));
         return this;
     }
 
     @Override
-    public PackingNestBuilder nameNestLocation(String name, String path) {
+    public NestBuildTask nameNestLocation(String name, String path) {
         addNestLocation(EntryLocation.name(name, path));
         return this;
     }
 
     @Override
-    public PackingNestBuilder nameNestLocation(String name, String locationName, String path) {
+    public NestBuildTask nameNestLocation(String name, String locationName, String path) {
         addNestLocation(EntryLocation.name(name, locationName, path));
         return this;
     }
 
     @Override
-    public PackingNestBuilder nameExpandLocation(String name) {
+    public NestBuildTask nameExpandLocation(String name) {
         addExpandLocation(EntryLocation.name(name));
         return this;
     }
 
     @Override
-    public PackingNestBuilder nameExpandLocation(String name, String locationName, String path) {
+    public NestBuildTask nameExpandLocation(String name, String locationName, String path) {
         addExpandLocation(EntryLocation.name(name, locationName, path));
         return this;
     }
@@ -94,7 +98,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         if(srcPath == null) {
             throw new IllegalArgumentException("Path is null");
         }
-        addEntry(new EntrySourceImpl(EntryLocation.path(srcPath)));
+        addEntry(new NestEntrySource(EntryLocation.path(srcPath)));
         return underBuilder;
     }
 
@@ -104,7 +108,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
             throw new IllegalArgumentException("Source location name is null");
         }
         EntryLocation srcLocation = assertSourceLocation(srcLocationName);
-        addEntry(new EntrySourceImpl(srcLocation));
+        addEntry(new NestEntrySource(srcLocation));
         return underBuilder;
     }
 
@@ -114,8 +118,40 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
             throw new IllegalArgumentException("Source location name is null");
         }
         assertSourceLocation(srcLocation);
-        addEntry(new EntrySourceImpl(EntryLocation.path(srcLocation, relativePath)));
+        addEntry(new NestEntrySource(EntryLocation.path(srcLocation, relativePath)));
         return underBuilder;
+    }
+
+
+    @Override
+    public File getNestFile() {
+        return nestFile;
+    }
+
+    @Override
+    public List<NestEntrySource> getEntries() {
+        return Collections.unmodifiableList(entries);
+    }
+
+    @Override
+    public Collection<String> getNestLocationNames() {
+        return Collections.unmodifiableCollection(nestLocations.keySet());
+    }
+
+    @Override
+    public EntryLocation getNestLocation(String name) {
+        if(name == null) {
+            throw new IllegalArgumentException("name is null");
+        }
+        return nestLocations.get(name);
+    }
+
+    @Override
+    public EntryLocation getSourceLocation(String name) {
+        if(name == null) {
+            throw new IllegalArgumentException("name is null");
+        }
+        return sourceLocations.get(name);
     }
 
     @Override
@@ -130,15 +166,9 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         } else if(!dir.isDirectory()) {
             throw new IllegalStateException("The path is not a directory " + dir.getAbsolutePath());
         }
+        nestFile = new File(dir, name);
 
-        final File zip = new File(dir, name);
-        PackingTask.forEntries(entries)
-            .setSourceLocations(sourceLocations)
-            .setNestLocations(nestLocations)
-            .setExpandLocations(expandLocations)
-            .zipTo(zip)
-            .run();
-        return zip;
+        return ZipNestBuilder.init().build(this);
     }
 
     private EntryLocation assertSourceLocation(String name) {
@@ -157,13 +187,13 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
         return location;
     }
 
-    private void addEntry(EntrySource entry) {
+    private void addEntry(NestEntrySource entry) {
         switch(entries.size()) {
             case 0:
                 entries = Collections.singletonList(entry);
                 break;
             case 1:
-                entries = new ArrayList<EntrySource>(entries);
+                entries = new ArrayList<NestEntrySource>(entries);
             default:
                 entries.add(entry);
         }
@@ -210,7 +240,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
      *
      * @return  last added entry
      */
-    private EntrySource getLastEntry() {
+    private NestEntrySource getLastEntry() {
         assert !entries.isEmpty() : "there are no entries";
         return entries.get(entries.size() - 1);
     }
@@ -218,14 +248,14 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
     class EntryExpandToBuilderImpl extends DelegatingPackingNestBuilder implements EntryExpandToBuilder {
 
         @Override
-        public PackingNestBuilder expandToLocation(String expandLocation) {
+        public NestBuildTask expandToLocation(String expandLocation) {
             // TODO Auto-generated method stub
             //return PackingNestBuilderImpl.this;
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public PackingNestBuilder expandToLocation(String expandLocation, String relativePath) {
+        public NestBuildTask expandToLocation(String expandLocation, String relativePath) {
             // TODO Auto-generated method stub
             //return PackingNestBuilderImpl.this;
             throw new UnsupportedOperationException();
@@ -239,7 +269,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
             if(nestPath == null) {
                 throw new IllegalArgumentException("nestPath is null");
             }
-            final EntrySource entrySource = getLastEntry();
+            final NestEntrySource entrySource = getLastEntry();
             entrySource.getNestEntry().setNestLocation(EntryLocation.path(nestPath));
             return expandToBuilder;
         }
@@ -250,7 +280,7 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
                 throw new IllegalArgumentException("nestLocation is null");
             }
             final EntryLocation location = assertNestLocation(nestLocation);
-            final EntrySource entrySource = getLastEntry();
+            final NestEntrySource entrySource = getLastEntry();
             entrySource.getNestEntry().setNestLocation(location);
             return expandToBuilder;
         }
@@ -264,67 +294,67 @@ class PackingNestBuilderImpl implements PackingNestBuilder {
                 throw new IllegalArgumentException("relativePath is null");
             }
             assertNestLocation(nestLocation);
-            final EntrySource entrySource = getLastEntry();
+            final NestEntrySource entrySource = getLastEntry();
             entrySource.getNestEntry().setNestLocation(EntryLocation.path(nestLocation, relativePath));
             return expandToBuilder;
         }
     }
 
-    class DelegatingPackingNestBuilder implements PackingNestBuilder {
+    class DelegatingPackingNestBuilder implements NestBuildTask {
 
         @Override
-        public PackingNestBuilder nameSourceLocation(String name) {
-            return PackingNestBuilderImpl.this.nameSourceLocation(name);
+        public NestBuildTask nameSourceLocation(String name) {
+            return NestBuildTaskImpl.this.nameSourceLocation(name);
         }
 
         @Override
-        public PackingNestBuilder nameSourceLocation(String name, String locationName, String path) {
-            return PackingNestBuilderImpl.this.nameSourceLocation(name, locationName, path);
+        public NestBuildTask nameSourceLocation(String name, String locationName, String path) {
+            return NestBuildTaskImpl.this.nameSourceLocation(name, locationName, path);
         }
 
         @Override
-        public PackingNestBuilder linkSourceLocation(String name, String path) {
-            return PackingNestBuilderImpl.this.linkSourceLocation(name, path);
+        public NestBuildTask linkSourceLocation(String name, String path) {
+            return NestBuildTaskImpl.this.linkSourceLocation(name, path);
         }
 
         @Override
-        public PackingNestBuilder nameNestLocation(String name, String path) {
-            return PackingNestBuilderImpl.this.nameNestLocation(name, path);
+        public NestBuildTask nameNestLocation(String name, String path) {
+            return NestBuildTaskImpl.this.nameNestLocation(name, path);
         }
 
         @Override
-        public PackingNestBuilder nameNestLocation(String name, String locationName, String path) {
-            return PackingNestBuilderImpl.this.nameNestLocation(name, locationName, path);
+        public NestBuildTask nameNestLocation(String name, String locationName, String path) {
+            return NestBuildTaskImpl.this.nameNestLocation(name, locationName, path);
         }
 
         @Override
-        public PackingNestBuilder nameExpandLocation(String name) {
-            return PackingNestBuilderImpl.this.nameExpandLocation(name);
+        public NestBuildTask nameExpandLocation(String name) {
+            return NestBuildTaskImpl.this.nameExpandLocation(name);
         }
 
         @Override
-        public PackingNestBuilder nameExpandLocation(String name, String locationName, String path) {
-            return PackingNestBuilderImpl.this.nameExpandLocation(name, locationName, path);
+        public NestBuildTask nameExpandLocation(String name, String locationName, String path) {
+            return NestBuildTaskImpl.this.nameExpandLocation(name, locationName, path);
         }
 
         @Override
         public EntryUnderBuilder add(String srcPath) {
-            return PackingNestBuilderImpl.this.add(srcPath);
+            return NestBuildTaskImpl.this.add(srcPath);
         }
 
         @Override
         public EntryUnderBuilder addLocation(String locationName, String relativePath) {
-            return PackingNestBuilderImpl.this.addLocation(locationName, relativePath);
+            return NestBuildTaskImpl.this.addLocation(locationName, relativePath);
         }
 
         @Override
         public EntryUnderBuilder addLocation(String srcLocationName) {
-            return PackingNestBuilderImpl.this.addLocation(srcLocationName);
+            return NestBuildTaskImpl.this.addLocation(srcLocationName);
         }
 
         @Override
         public File build(File dir, String name) throws NestException {
-            return PackingNestBuilderImpl.this.build(dir, name);
+            return NestBuildTaskImpl.this.build(dir, name);
         }
     }
 }

@@ -20,17 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.pack;
+package org.wildfly.nest.build;
 
-import java.util.List;
+import java.io.OutputStream;
 
-import org.wildfly.nest.NestContext;
+import org.wildfly.nest.NestException;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface PackingContext extends NestContext {
+public interface EntryWriter<T extends OutputStream> {
 
-    List<EntrySource> getEntries();
+    void write(EntryBuildContext<T> ctx) throws NestException;
 }

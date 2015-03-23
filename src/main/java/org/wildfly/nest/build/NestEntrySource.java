@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.pack;
+package org.wildfly.nest.build;
 
 import org.wildfly.nest.EntryLocation;
 import org.wildfly.nest.NestEntry;
@@ -29,16 +29,16 @@ import org.wildfly.nest.NestEntry;
  *
  * @author Alexey Loubyansky
  */
-class EntrySourceImpl implements EntrySource {
+public class NestEntrySource {
 
     private final NestEntry nestEntry;
     private final EntryLocation srcLocation;
 
-    EntrySourceImpl(EntryLocation srcLocation) {
+    NestEntrySource(EntryLocation srcLocation) {
         this(NestEntry.create(), srcLocation);
     }
 
-    EntrySourceImpl(NestEntry nestEntry, EntryLocation srcLocation) {
+    NestEntrySource(NestEntry nestEntry, EntryLocation srcLocation) {
         if(nestEntry == null) {
             throw new IllegalArgumentException("entry is null");
         }
@@ -49,18 +49,10 @@ class EntrySourceImpl implements EntrySource {
         this.srcLocation = srcLocation;
     }
 
-    /* (non-Javadoc)
-     * @see org.wildfly.nest.pack.EntrySource#getNestEntry()
-     */
-    @Override
     public NestEntry getNestEntry() {
         return nestEntry;
     }
 
-    /* (non-Javadoc)
-     * @see org.wildfly.nest.pack.EntrySource#getSourceLocation()
-     */
-    @Override
     public EntryLocation getSourceLocation() {
         return srcLocation;
     }
@@ -82,7 +74,7 @@ class EntrySourceImpl implements EntrySource {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        EntrySourceImpl other = (EntrySourceImpl) obj;
+        NestEntrySource other = (NestEntrySource) obj;
         if (nestEntry == null) {
             if (other.nestEntry != null)
                 return false;

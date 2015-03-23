@@ -33,18 +33,18 @@ public class NestEntry {
     private EntryLocation expandLocation;
 
     public static NestEntry create() {
-        return under(EntryLocation.DEFAULT);
+        return create(EntryLocation.DEFAULT);
     }
 
-    public static NestEntry under(EntryLocation nestLocation) {
-        return new NestEntry(nestLocation, null);
+    public static NestEntry create(EntryLocation nestLocation) {
+        return create(nestLocation, null);
     }
 
-    public static NestEntry under(EntryLocation nestLocation, EntryLocation expandLocation) {
+    public static NestEntry create(EntryLocation nestLocation, EntryLocation expandLocation) {
         return new NestEntry(nestLocation, expandLocation);
     }
 
-    NestEntry(EntryLocation nestLocation, EntryLocation expandLocation) {
+    protected NestEntry(EntryLocation nestLocation, EntryLocation expandLocation) {
         if(nestLocation == null) {
             throw new IllegalArgumentException("Nest location is null");
         }

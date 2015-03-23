@@ -45,7 +45,7 @@ public class ZipEntryExpander implements EntryExpander<ZipEntry> {
         assert entry != null : "entry is null";
 
         final String nestPath = entry.getName();
-        final File expandPath = ctx.getNestContext().resolveExpandPath(nestPath);
+        final File expandPath = ctx.getNestExpandContext().resolveExpandPath(nestPath);
         //System.out.println("expanding " + nestPath + " to " + expandPath.getAbsolutePath());
         if (entry.isDirectory()) {
             expandPath.mkdirs();

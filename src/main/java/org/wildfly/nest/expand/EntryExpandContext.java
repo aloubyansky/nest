@@ -31,7 +31,7 @@ import org.wildfly.nest.NestException;
 */
 public interface EntryExpandContext<T> {
 
-    NestExpandContext getNestContext();
+    NestExpandContext getNestExpandContext();
 
     T getEntry();
 

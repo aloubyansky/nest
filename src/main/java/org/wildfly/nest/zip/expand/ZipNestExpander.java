@@ -30,9 +30,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.wildfly.nest.NestException;
+import org.wildfly.nest.common.EntryProcessorChain;
 import org.wildfly.nest.expand.EntryExpandContext;
 import org.wildfly.nest.expand.EntryExpander;
-import org.wildfly.nest.expand.EntryExpanderChain;
 import org.wildfly.nest.expand.NestExpandContext;
 import org.wildfly.nest.expand.NestExpander;
 import org.wildfly.nest.util.IoUtils;
@@ -47,10 +47,10 @@ public class ZipNestExpander implements NestExpander {
         return new ZipNestExpander();
     }
 
-    private final EntryExpanderChain<ZipEntry> chain;
+    private final EntryProcessorChain<ZipEntryExpander> chain;
 
     private ZipNestExpander() {
-        chain = EntryExpanderChain.<ZipEntry>create().add(new ZipEntryExpander()).done();
+        chain = EntryProcessorChain.<ZipEntryExpander>create().add(new ZipEntryExpander()).done();
     }
 
     @Override
@@ -66,9 +66,7 @@ public class ZipNestExpander implements NestExpander {
 
             final Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while(entries.hasMoreElements()) {
-                final ZipEntry entry = entries.nextElement();
-                entryCtx.entry = entry;
-
+                entryCtx.entry = entries.nextElement();
                 for(EntryExpander<ZipEntry> entryExpander : chain) {
                     entryExpander.process(entryCtx);
                 }
@@ -98,7 +96,7 @@ public class ZipNestExpander implements NestExpander {
         }
 
         @Override
-        public NestExpandContext getNestContext() {
+        public NestExpandContext getNestExpandContext() {
             return ctx;
         }
 

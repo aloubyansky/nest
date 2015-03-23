@@ -19,15 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.nest.build;
 
-package org.wildfly.nest.pack;
+import java.io.OutputStream;
 
+import org.wildfly.nest.NestException;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface SectionWriter {
+public interface EntryBuildContext<T extends OutputStream> {
 
-    void write(PackingContext ctx);
+    NestBuildContext getNestBuildContext();
+
+    /**
+     * Entry source path.
+     *
+     * @return  entry source path
+     * @throws NestException
+     */
+    String getSourcePath() throws NestException;
+
+    /**
+     * The path under which this entry should be stored in the nest.
+     *
+     * @return  entry nest path
+     * @throws NestException
+     */
+    String getNestPath() throws NestException;
+
+    T getEntryOutputStream() throws NestException;
 }

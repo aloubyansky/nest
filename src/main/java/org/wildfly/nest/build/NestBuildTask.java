@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.pack;
+package org.wildfly.nest.build;
 
 import java.io.File;
 
@@ -31,11 +31,11 @@ import org.wildfly.nest.NestException;
  *
  * @author Alexey Loubyansky
  */
-public interface PackingNestBuilder {
+public interface NestBuildTask {
 
     class FACTORY {
-        public static PackingNestBuilder create() {
-            return new PackingNestBuilderImpl();
+        public static NestBuildTask create() {
+            return new NestBuildTaskImpl();
         }
     }
 
@@ -45,7 +45,7 @@ public interface PackingNestBuilder {
      * @param name  new source location name
      * @return  nest builder
      */
-    PackingNestBuilder nameSourceLocation(String name);
+    NestBuildTask nameSourceLocation(String name);
 
     /**
      * Defines a new source location name with the path relative to another
@@ -57,7 +57,7 @@ public interface PackingNestBuilder {
      * @param path  path relative to the specified named source location
      * @return  nest builder
      */
-    PackingNestBuilder nameSourceLocation(String name, String sourceLocationName, String path);
+    NestBuildTask nameSourceLocation(String name, String sourceLocationName, String path);
 
     /**
      * Links a named source location to the actual path.
@@ -70,7 +70,7 @@ public interface PackingNestBuilder {
      * @param path  actual source path
      * @return  nest builder
      */
-    PackingNestBuilder linkSourceLocation(String name, String path);
+    NestBuildTask linkSourceLocation(String name, String path);
 
     /**
      * Defines a new named location inside the package.
@@ -79,7 +79,7 @@ public interface PackingNestBuilder {
      * @param path  path inside the package
      * @return  nest builder
      */
-    PackingNestBuilder nameNestLocation(String name, String path);
+    NestBuildTask nameNestLocation(String name, String path);
 
     /**
      * Defines a new named location inside the package with the path relative
@@ -91,40 +91,7 @@ public interface PackingNestBuilder {
      * @param path  path relative to the specified named nest location
      * @return  nest builder
      */
-    PackingNestBuilder nameNestLocation(String name, String nestLocationName, String path);
-
-    /** TODO
-     * Links a named nest location to the actual unpack path.
-     * If the nest location name has been defined, the existing named nest
-     * location is linked to the path.
-     * Otherwise, the method will define a new named nest location and link it
-     * to the path.
-     *
-     * @param name  nest location name
-     * @param path  the path
-     * @return  nest builder
-     *
-    PackingNestBuilder linkNestLocation(String name, String path); */
-
-    /** TODO
-     * Links named nest location to the named unpack location.
-     *
-     * @param nestLocationName  nest location name
-     * @param unpackLocationName  unpack location name
-     * @return  nest builder
-     *
-    PackingNestBuilder linkNestToUnpackLocation(String nestLocationName, String unpackLocationName); */
-
-    /** TODO
-     * Links named nest location to the path relative to a named unpack location.
-     *
-     * @param nestLocationName  nest location name
-     * @param unpackLocationName  unpack location name relative to which
-     *                            the link should be created
-     * @param path  path relative to the specified unpack location
-     * @return  nest builder
-     *
-    PackingNestBuilder linkNestToUnpackLocation(String nestLocationName, String unpackLocationName, String path); */
+    NestBuildTask nameNestLocation(String name, String nestLocationName, String path);
 
     /**
      * Defines a new named (not linked) expand location.
@@ -132,7 +99,7 @@ public interface PackingNestBuilder {
      * @param name  expand location name
      * @return  nest builder
      */
-    PackingNestBuilder nameExpandLocation(String name);
+    NestBuildTask nameExpandLocation(String name);
 
     /**
      * Defines a new named expand location with the path relative to another
@@ -144,20 +111,7 @@ public interface PackingNestBuilder {
      * @param path  path relative to the specified named expand location
      * @return
      */
-    PackingNestBuilder nameExpandLocation(String name, String expandLocationName, String path);
-
-    /** TODO
-     * Links a named unpack location to the actual path.
-     * If the unpack location name has been defined, the existing named unpack
-     * location is linked to the path.
-     * Otherwise, the method will define a new named unpack location and link it
-     * to the path.
-     *
-     * @param name  unpack location name
-     * @param path  the path
-     * @return  nest builder
-     *
-    PackingNestBuilder linkUnpackLocation(String name, String path);*/
+    NestBuildTask nameExpandLocation(String name, String expandLocationName, String path);
 
     /**
      * Adds the content at the specified actual path to the package.
@@ -199,16 +153,7 @@ public interface PackingNestBuilder {
      */
     File build(File dir, String name) throws NestException;
 
-    public interface EntryExpandToBuilder extends PackingNestBuilder {
-
-        /** TODO
-         * The actual path to which the previously added to the package entry
-         * should be unpacked to.
-         *
-         * @param path  actual target path
-         * @return  nest builder
-         *
-        PackingNestBuilder unpackTo(String path); */
+    public interface EntryExpandToBuilder extends NestBuildTask {
 
         /**
          * Specifies a named expand location the previously added to
@@ -218,7 +163,7 @@ public interface PackingNestBuilder {
          *          added to the package entry should be expanded to
          * @return  nest builder
          */
-        PackingNestBuilder expandToLocation(String namedExpandLocation);
+        NestBuildTask expandToLocation(String namedExpandLocation);
 
         /**
          * Specifies a relative to the named expand location path
@@ -230,7 +175,7 @@ public interface PackingNestBuilder {
          *                      location
          * @return  nest builder
          */
-        PackingNestBuilder expandToLocation(String namedExpandLocation, String relativePath);
+        NestBuildTask expandToLocation(String namedExpandLocation, String relativePath);
     }
 
     public interface EntryUnderBuilder extends EntryExpandToBuilder {

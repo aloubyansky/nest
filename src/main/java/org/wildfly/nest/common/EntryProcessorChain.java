@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.expand;
+package org.wildfly.nest.common;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,27 +31,27 @@ import java.util.List;
  *
  * @author Alexey Loubyansky
  */
-public class EntryExpanderChain<T> implements Iterable<EntryExpander<T>> {
+public class EntryProcessorChain<T> implements Iterable<T> {
 
     public interface Builder<T> {
-        Builder<T> add(EntryExpander<T> extractor);
+        Builder<T> add(T processor);
 
-        EntryExpanderChain<T> done();
+        EntryProcessorChain<T> done();
     }
 
     public static <T> Builder<T> create() {
         return new Builder<T>() {
 
-            final EntryExpanderChain<T> chain = new EntryExpanderChain<T>();
+            final EntryProcessorChain<T> chain = new EntryProcessorChain<T>();
 
             @Override
-            public Builder<T> add(EntryExpander<T> extractor) {
-                chain.add(extractor);
+            public Builder<T> add(T processor) {
+                chain.add(processor);
                 return this;
             }
 
             @Override
-            public EntryExpanderChain<T> done() {
+            public EntryProcessorChain<T> done() {
                 chain.freeze();
                 return chain;
             }
@@ -59,35 +59,35 @@ public class EntryExpanderChain<T> implements Iterable<EntryExpander<T>> {
         };
     }
 
-    private List<EntryExpander<T>> extractors = Collections.emptyList();
+    private List<T> processors = Collections.emptyList();
 
 
-    private EntryExpanderChain() {
+    private EntryProcessorChain() {
     }
 
-    EntryExpanderChain<T> add(EntryExpander<T> extractor) {
-        if(extractor == null) {
-            throw new IllegalArgumentException("extractor is null");
+    EntryProcessorChain<T> add(T processor) {
+        if(processor == null) {
+            throw new IllegalArgumentException("processor is null");
         }
-        switch(extractors.size()) {
+        switch(processors.size()) {
             case 0:
-                extractors = Collections.singletonList(extractor);
+                processors = Collections.singletonList(processor);
                 break;
             case 1:
-                extractors = new ArrayList<EntryExpander<T>>(extractors);
+                processors = new ArrayList<T>(processors);
             default:
-                extractors.add(extractor);
+                processors.add(processor);
         }
         return this;
     }
 
     void freeze() {
-        extractors = Collections.unmodifiableList(extractors);
+        processors = Collections.unmodifiableList(processors);
     }
 
     @Override
-    public Iterator<EntryExpander<T>> iterator() {
-        return extractors.iterator();
+    public Iterator<T> iterator() {
+        return processors.iterator();
     }
 
 }

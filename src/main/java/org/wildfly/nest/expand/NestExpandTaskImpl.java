@@ -31,7 +31,7 @@ import java.util.Map;
 import org.wildfly.nest.EntryLocation;
 import org.wildfly.nest.NestEntry;
 import org.wildfly.nest.NestException;
-import org.wildfly.nest.builder.AbstractCommonBuilder;
+import org.wildfly.nest.common.AbstractCommonBuilder;
 import org.wildfly.nest.util.ZipUtils;
 import org.wildfly.nest.zip.expand.ZipNestExpander;
 
@@ -40,7 +40,7 @@ import org.wildfly.nest.zip.expand.ZipNestExpander;
  * @author Alexey Loubyansky
  *
  */
-public class NestExpandBuilderImpl extends AbstractCommonBuilder<NestExpandBuilder> implements NestExpandBuilder, NestExpandContext {
+public class NestExpandTaskImpl extends AbstractCommonBuilder<NestExpandTask> implements NestExpandTask, NestExpandContext {
 
     private final File nestFile;
 
@@ -48,7 +48,7 @@ public class NestExpandBuilderImpl extends AbstractCommonBuilder<NestExpandBuild
 
     private Map<String, File> linkedNestPaths;
 
-    NestExpandBuilderImpl(File nestFile) {
+    NestExpandTaskImpl(File nestFile) {
         if(nestFile == null) {
             throw new IllegalArgumentException("nestFile is null");
         }
@@ -62,7 +62,7 @@ public class NestExpandBuilderImpl extends AbstractCommonBuilder<NestExpandBuild
     }
 
     @Override
-    public NestExpandBuilder linkExpandLocation(String expandLocationName, String expandPath) throws NestException {
+    public NestExpandTask linkExpandLocation(String expandLocationName, String expandPath) throws NestException {
         if(expandLocationName == null) {
             throw new IllegalArgumentException("expandLocationName is null");
         }
@@ -75,7 +75,7 @@ public class NestExpandBuilderImpl extends AbstractCommonBuilder<NestExpandBuild
     }
 
     @Override
-    public NestExpandBuilder linkExpandLocation(String expandLocationName, String relativeToName, String expandPath) throws NestException {
+    public NestExpandTask linkExpandLocation(String expandLocationName, String relativeToName, String expandPath) throws NestException {
         if(expandLocationName == null) {
             throw new IllegalArgumentException("expandLocationName is null");
         }

@@ -20,28 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.pack;
+package org.wildfly.nest.build;
+
+import java.io.File;
+import java.util.List;
 
 import org.wildfly.nest.EntryLocation;
-import org.wildfly.nest.NestEntry;
+import org.wildfly.nest.NestContext;
 
 /**
- * @author Alexey Loubyansky
  *
+ * @author Alexey Loubyansky
  */
-public interface EntrySource {
+public interface NestBuildContext extends NestContext {
+
+    EntryLocation getSourceLocation(String name);
+
+    List<NestEntrySource> getEntries();
 
     /**
-     * The entry as it will appear in the nest
+     * Target file to save the built nest to.
      *
-     * @return  the entry as it will appear in the nest
+     * @return  target file to save the built nest to
      */
-    NestEntry getNestEntry();
-
-    /**
-     * Location of the entry to be added to the nest.
-     *
-     * @return  location of the entry to be added to the nest
-     */
-    EntryLocation getSourceLocation();
+    File getNestFile();
 }

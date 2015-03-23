@@ -25,17 +25,17 @@ package org.wildfly.nest.expand;
 import java.io.File;
 
 import org.wildfly.nest.NestException;
-import org.wildfly.nest.builder.CommonBuilder;
+import org.wildfly.nest.common.CommonBuilder;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface NestExpandBuilder extends CommonBuilder<NestExpandBuilder> {
+public interface NestExpandTask extends CommonBuilder<NestExpandTask> {
 
     class FACTORY {
-        public static NestExpandBuilder create(File nestFile) {
-            return new NestExpandBuilderImpl(nestFile);
+        public static NestExpandTask create(File nestFile) {
+            return new NestExpandTaskImpl(nestFile);
         }
     }
 
@@ -48,7 +48,7 @@ public interface NestExpandBuilder extends CommonBuilder<NestExpandBuilder> {
      * @param expandPath  the path to link to
      * @return  nest builder
      */
-    NestExpandBuilder linkExpandLocation(String expandLocationName, String expandPath) throws NestException;
+    NestExpandTask linkExpandLocation(String expandLocationName, String expandPath) throws NestException;
 
     /**
      * Links a named expand location to an expand path relative to another expand location.
@@ -61,7 +61,7 @@ public interface NestExpandBuilder extends CommonBuilder<NestExpandBuilder> {
      * @return  nest builder
      * @throws NestException
      */
-    NestExpandBuilder linkExpandLocation(String expandLocationName, String relativeToLocation, String path) throws NestException;
+    NestExpandTask linkExpandLocation(String expandLocationName, String relativeToLocation, String path) throws NestException;
 
     /**
      * Expands the nest package into the specified directory.
