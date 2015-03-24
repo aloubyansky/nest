@@ -41,6 +41,10 @@ import org.wildfly.nest.util.ZipUtils;
  */
 public class ZipEntryWriter implements EntryWriter<ZipOutputStream> {
 
+    public ZipEntryWriter() {
+        //EntryAttachments.<ZipOutputStream>create().add(new NestLocationsAttachmentHandler());
+    }
+
     @Override
     public void write(EntryBuildContext<ZipOutputStream> ctx) throws NestException {
 

@@ -108,6 +108,11 @@ public class ZipNestBuilder implements NestBuilder {
         }
 
         @Override
+        public NestEntrySource getEntrySource() {
+            return entry;
+        }
+
+        @Override
         public String getSourcePath() throws NestException {
             final String path = resolvePath(entry.getSourceLocation(), SOURCE_LOCATION);
             if(path == null) {
