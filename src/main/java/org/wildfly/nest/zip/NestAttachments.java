@@ -34,7 +34,6 @@ import java.util.Map;
 
 import org.wildfly.nest.NestException;
 import org.wildfly.nest.build.NestBuildContext;
-import org.wildfly.nest.build.NestEntrySource;
 import org.wildfly.nest.expand.NestExpandContext;
 import org.wildfly.nest.util.IoUtils;
 
@@ -42,20 +41,20 @@ import org.wildfly.nest.util.IoUtils;
  *
  * @author Alexey Loubyansky
  */
-public class EntryAttachments {
+public class NestAttachments {
 
-    public static final EntryAttachments DEFAULT = create().add(new EntryLocationsAttachmentHandler());
+    public static final NestAttachments DEFAULT = create().add(new NestLocationsAttachmentHandler());
 
-    public static EntryAttachments create() {
-        return new EntryAttachments();
+    public static NestAttachments create() {
+        return new NestAttachments();
     }
 
-    private Map<String, EntryAttachmentHandler> handlers = Collections.emptyMap();
+    private Map<String, NestAttachmentHandler> handlers = Collections.emptyMap();
 
-    private EntryAttachments() {
+    private NestAttachments() {
     }
 
-    public EntryAttachments add(EntryAttachmentHandler handler) {
+    public NestAttachments add(NestAttachmentHandler handler) {
         if(handler == null) {
             throw new IllegalArgumentException("serializer is null");
         }
@@ -67,7 +66,7 @@ public class EntryAttachments {
                 handlers = Collections.singletonMap(handler.getId(), handler);
                 break;
             case 1:
-                handlers = new HashMap<String, EntryAttachmentHandler>(handlers);
+                handlers = new HashMap<String, NestAttachmentHandler>(handlers);
             default:
                 handlers.put(handler.getId(), handler);
         }
@@ -75,7 +74,7 @@ public class EntryAttachments {
     }
 
     @SuppressWarnings("resource")
-    public byte[] write(NestBuildContext ctx, NestEntrySource entry) throws NestException {
+    public byte[] write(NestBuildContext ctx) throws NestException {
 
         if (handlers.isEmpty()) {
             return null;
@@ -85,8 +84,8 @@ public class EntryAttachments {
         DataOutputStream dos = null;
 
         try {
-            for (EntryAttachmentHandler writer : handlers.values()) {
-                final byte[] bytes = writer.toByteArray(ctx, entry);
+            for (NestAttachmentHandler writer : handlers.values()) {
+                final byte[] bytes = writer.toByteArray(ctx);
                 if (bytes != null) {
                     final String id = writer.getId();
                     if (id == null) {
@@ -129,7 +128,7 @@ public class EntryAttachments {
 
             String id = readId(dis);
             while (id != null) {
-                final EntryAttachmentHandler reader = handlers.get(id);
+                final NestAttachmentHandler reader = handlers.get(id);
                 if (reader == null) {
                     throw new NestException("Unrecognized handler id: " + id);
                 }

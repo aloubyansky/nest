@@ -144,7 +144,7 @@ public class NestExpandTaskImpl extends AbstractCommonBuilder<NestExpandTask> im
         this.baseExpandDir = baseExpandDir;
         linkNestPaths(baseExpandDir);
 
-        ZipNestExpander.init().expand(this);
+        new ZipNestExpander().expand(this);
     }
 
     protected void linkNestPaths(File baseDir) throws NestException {

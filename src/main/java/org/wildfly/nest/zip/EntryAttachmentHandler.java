@@ -22,20 +22,20 @@
 
 package org.wildfly.nest.zip;
 
-import java.io.OutputStream;
-
 import org.wildfly.nest.NestException;
-import org.wildfly.nest.build.EntryBuildContext;
+import org.wildfly.nest.build.NestBuildContext;
+import org.wildfly.nest.build.NestEntrySource;
+import org.wildfly.nest.expand.NestExpandContext;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface EntryAttachmentHandler<T extends OutputStream> {
+public interface EntryAttachmentHandler {
 
     String getId();
 
-    void fromByteArray(byte[] bytes) throws NestException;
+    void fromByteArray(NestExpandContext ctx, byte[] bytes) throws NestException;
 
-    byte[] toByteArray(EntryBuildContext<T> ctx) throws NestException;
+    byte[] toByteArray(NestBuildContext ctx, NestEntrySource entry) throws NestException;
 }

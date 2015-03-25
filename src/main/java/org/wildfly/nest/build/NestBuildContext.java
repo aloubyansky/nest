@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.wildfly.nest.EntryLocation;
 import org.wildfly.nest.NestContext;
+import org.wildfly.nest.NestException;
 
 /**
  *
@@ -35,6 +36,10 @@ import org.wildfly.nest.NestContext;
 public interface NestBuildContext extends NestContext {
 
     EntryLocation getSourceLocation(String name);
+
+    String resolveSourcePath(EntryLocation location) throws NestException;
+
+    String resolveNestPath(EntryLocation location) throws NestException;
 
     List<NestEntrySource> getEntries();
 

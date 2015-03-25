@@ -41,6 +41,7 @@ import java.util.zip.ZipOutputStream;
 public class ZipUtils {
 
     public static final String ENTRY_SEPARATOR = "/";
+    public static final String ROOT_ENTRY_NAME = "." + ENTRY_SEPARATOR;
 
     public static void zip(File sourceDir, File zipFile) {
         try {

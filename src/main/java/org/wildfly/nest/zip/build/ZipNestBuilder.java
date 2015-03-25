@@ -22,19 +22,20 @@
 
 package org.wildfly.nest.zip.build;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.wildfly.nest.EntryLocation;
 import org.wildfly.nest.NestException;
-import org.wildfly.nest.build.EntryBuildContext;
+import org.wildfly.nest.build.AbstractNestBuilder;
 import org.wildfly.nest.build.NestBuildContext;
-import org.wildfly.nest.build.NestBuilder;
 import org.wildfly.nest.build.NestEntrySource;
-import org.wildfly.nest.common.EntryProcessorChain;
 import org.wildfly.nest.util.IoUtils;
 import org.wildfly.nest.util.ZipUtils;
 
@@ -42,117 +43,168 @@ import org.wildfly.nest.util.ZipUtils;
  *
  * @author Alexey Loubyansky
  */
-public class ZipNestBuilder implements NestBuilder {
+public class ZipNestBuilder extends AbstractNestBuilder {
 
-    public static ZipNestBuilder init() {
-        return new ZipNestBuilder();
-    }
+    private ZipOutputStream zipOut;
 
-    private final EntryProcessorChain<ZipEntryWriter> chain;
+    private File currentEntrySrc;
+    private ZipEntry currentZipEntry;
 
-    private ZipNestBuilder() {
-        chain = EntryProcessorChain.<ZipEntryWriter>create().add(new ZipEntryWriter()).done();
+    @Override
+    protected void prepareToBuild(NestBuildContext ctx) throws NestException {
+
+        FileOutputStream fis;
+        try {
+            fis = new FileOutputStream(ctx.getNestFile());
+        } catch (FileNotFoundException e) {
+            throw new NestException("Failed to open " + ctx.getNestFile().getAbsolutePath(), e);
+        }
+        zipOut = new ZipOutputStream(new BufferedOutputStream(fis));
     }
 
     @Override
-    public File build(NestBuildContext ctx) throws NestException {
+    protected void tidyUpAfterBuild(NestBuildContext ctx) throws NestException {
 
-        final File nestFile = ctx.getNestFile();
-        if(nestFile.exists()) {
-            if(nestFile.isDirectory()) {
-                throw new NestException("Nest file points a directory " + nestFile.getAbsolutePath());
-            }
-            nestFile.delete();
+        IoUtils.safeClose(zipOut);
+    }
+
+    @Override
+    protected void addNestAttachments(NestBuildContext ctx, byte[] bytes) throws NestException {
+        final ZipEntry entry = new ZipEntry(ZipUtils.ROOT_ENTRY_NAME);
+        entry.setExtra(bytes);
+        try {
+            zipOut.putNextEntry(entry);
+            zipOut.closeEntry();
+        } catch (IOException e) {
+            throw new NestException("Failed to add root entry", e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.wildfly.nest.build.AbstractNestBuilder#buildEntry(org.wildfly.nest.build.NestEntrySource)
+     *
+    @Override
+    protected void buildEntry(NestBuildContext ctx, NestEntrySource entry) throws NestException {
+
+        final String srcPath = ctx.resolveSourcePath(entry.getSourceLocation());
+        final String nestPath = ctx.resolveNestPath(entry.getNestEntry().getNestLocation());
+        try {
+            addToZip(new File(srcPath), nestPath, zipOut);
+        } catch (IOException e) {
+            throw new NestException("Failed to ZIP entry " + srcPath + " to " + nestPath, e);
+        }
+    }
+
+    private static void addToZip(File fileOrDir, String nestPath, ZipOutputStream zos) throws IOException {
+        if (fileOrDir.isDirectory()) {
+            final String dirName = nestPath == null ? fileOrDir.getName() + ZipUtils.ENTRY_SEPARATOR :
+                nestPath + ZipUtils.ENTRY_SEPARATOR + fileOrDir.getName() + ZipUtils.ENTRY_SEPARATOR;
+            addDirectoryToZip(fileOrDir, dirName, zos);
+        } else {
+            addFileToZip(fileOrDir, nestPath == null ? null : nestPath + ZipUtils.ENTRY_SEPARATOR, zos);
+        }
+    }*/
+
+    @Override
+    protected void beginEntry(NestBuildContext ctx, NestEntrySource entry) throws NestException {
+
+        final String srcPath = ctx.resolveSourcePath(entry.getSourceLocation());
+        final String nestPath = ctx.resolveNestPath(entry.getNestEntry().getNestLocation());
+
+        currentEntrySrc = new File(srcPath);
+
+        final StringBuilder entryName = new StringBuilder();
+        if (nestPath != null) {
+            entryName.append(nestPath).append(ZipUtils.ENTRY_SEPARATOR);
+        }
+        entryName.append(currentEntrySrc.getName());
+
+        if (currentEntrySrc.isDirectory()) {
+            entryName.append(ZipUtils.ENTRY_SEPARATOR);
         }
 
-        ZipOutputStream zos = null;
-        try {
-            final FileOutputStream fis = new FileOutputStream(nestFile);
-            zos = new ZipOutputStream(new BufferedOutputStream(fis));
-            ZipEntryContext entryCtx = new ZipEntryContext(ctx, zos);
+        currentZipEntry = new ZipEntry(entryName.toString());
+    }
 
-            for(NestEntrySource entry : ctx.getEntries()) {
-                entryCtx.entry = entry;
-                for(ZipEntryWriter writer : chain) {
-                    writer.write(entryCtx);
+    @Override
+    protected void addEntryAttachments(NestBuildContext ctx, NestEntrySource entry, byte[] attachments) throws NestException {
+        currentZipEntry.setExtra(attachments);
+    }
+
+    @Override
+    protected void completeEntry(NestBuildContext ctx, NestEntrySource entry) throws NestException {
+
+        try {
+            zipOut.putNextEntry(currentZipEntry);
+
+            if (currentZipEntry.isDirectory()) {
+                zipOut.closeEntry();
+
+                File[] children = currentEntrySrc.listFiles();
+                if (children != null) {
+                    for (File file : children) {
+                        if (file.isDirectory()) {
+                            addDirectoryToZip(file, currentZipEntry.getName() + file.getName() + ZipUtils.ENTRY_SEPARATOR);
+                        } else {
+                            addFileToZip(file, currentZipEntry.getName());
+                        }
+                    }
+                }
+            } else {
+                BufferedInputStream bis = null;
+                try {
+                    final FileInputStream is = new FileInputStream(currentEntrySrc);
+                    bis = new BufferedInputStream(is);
+                    IoUtils.copyStream(bis, zipOut);
+                    zipOut.closeEntry();
+                } finally {
+                    IoUtils.safeClose(bis);
                 }
             }
         } catch (IOException e) {
-            throw new NestException("Failed to create ZIP " + nestFile.getAbsolutePath(), e);
+            throw new NestException("Failed to add " + ctx.resolveSourcePath(entry.getSourceLocation()) + " as " + currentZipEntry.getName(), e);
         } finally {
-            IoUtils.safeClose(zos);
+            currentZipEntry = null;
+            currentEntrySrc = null;
         }
-
-        return nestFile;
     }
 
-    class ZipEntryContext implements EntryBuildContext<ZipOutputStream> {
+    private void addDirectoryToZip(File dir, String dirName) throws IOException {
 
-        private static final int SOURCE_LOCATION = 0;
-        private static final int NEST_LOCATION = 1;
+        final ZipEntry dirEntry = new ZipEntry(dirName);
+        zipOut.putNextEntry(dirEntry);
+        zipOut.closeEntry();
 
-        private final NestBuildContext ctx;
-        private final ZipOutputStream os;
-        NestEntrySource entry;
-
-        ZipEntryContext(NestBuildContext ctx, ZipOutputStream os) {
-            assert ctx != null : "nest build context is null";
-            assert os != null : "nest output stream is null";
-            this.ctx = ctx;
-            this.os = os;
-        }
-
-        @Override
-        public NestBuildContext getNestBuildContext() {
-            return ctx;
-        }
-
-        @Override
-        public NestEntrySource getEntrySource() {
-            return entry;
-        }
-
-        @Override
-        public String getSourcePath() throws NestException {
-            final String path = resolvePath(entry.getSourceLocation(), SOURCE_LOCATION);
-            if(path == null) {
-                throw new NestException("Failed to resolve source path for location " + entry.getSourceLocation());
+        File[] children = dir.listFiles();
+        if (children != null) {
+            for (File file : children) {
+                if (file.isDirectory()) {
+                    addDirectoryToZip(file, dirName + file.getName() + ZipUtils.ENTRY_SEPARATOR);
+                } else {
+                    addFileToZip(file, dirName);
+                }
             }
-            return path;
         }
+    }
 
-        @Override
-        public String getNestPath() throws NestException {
-            return resolvePath(entry.getNestEntry().getNestLocation(), NEST_LOCATION);
-        }
+    private void addFileToZip(File file, String nestPath) throws IOException {
+        final FileInputStream is = new FileInputStream(file);
+        try {
+            final String entryName = nestPath == null ? file.getName() : nestPath + file.getName();
+            zipOut.putNextEntry(new ZipEntry(entryName));
 
-        @Override
-        public ZipOutputStream getEntryOutputStream() throws NestException {
-            return os;
-        }
-
-        private String resolvePath(EntryLocation location, int locationType) throws NestException {
-            if(location == EntryLocation.DEFAULT) {
-                return null;
+            final BufferedInputStream bis = new BufferedInputStream(is);
+            try {
+                IoUtils.copyStream(bis, zipOut);
+            } finally {
+                IoUtils.safeClose(bis);
             }
 
-            final String relativeToName = location.getRelativeTo();
-            if(relativeToName == null) {
-                return location.getPath();
-            }
-
-            final EntryLocation relativeToLocation = locationType == SOURCE_LOCATION ? ctx.getSourceLocation(relativeToName) : ctx.getNestLocation(relativeToName);
-            if(relativeToLocation == null) {
-                throw new NestException("Missing location definition for " + relativeToName);
-            }
-            final String resolved = resolvePath(relativeToLocation, locationType);
-            if(resolved == null) {
-                return location.getPath();
-            }
-            if(location.getPath() == null) {
-                return resolved;
-            }
-            return resolved + (locationType == SOURCE_LOCATION ? File.separator : ZipUtils.ENTRY_SEPARATOR) + location.getPath();
+            zipOut.closeEntry();
+        } finally {
+            IoUtils.safeClose(is);
         }
     }
 }

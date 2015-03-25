@@ -105,7 +105,7 @@ public class NestBuildTestBase {
         try {
             ZipUtils.unzip(zip, nest);
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to unzip the nest: " + e.getMessage());
+            throw new IllegalStateException("Failed to unzip " + zip.getAbsolutePath(), e);
         }
 
         dir.assertMatches(nest);

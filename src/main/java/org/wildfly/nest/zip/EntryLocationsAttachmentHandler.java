@@ -23,11 +23,11 @@
 package org.wildfly.nest.zip;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import org.wildfly.nest.EntryLocation;
 import org.wildfly.nest.NestException;
 import org.wildfly.nest.build.NestBuildContext;
+import org.wildfly.nest.build.NestEntrySource;
 import org.wildfly.nest.expand.NestExpandContext;
 import org.wildfly.nest.util.IoUtils;
 
@@ -35,9 +35,9 @@ import org.wildfly.nest.util.IoUtils;
  *
  * @author Alexey Loubyansky
  */
-public class NestLocationsAttachmentHandler implements NestAttachmentHandler {
+public class EntryLocationsAttachmentHandler implements EntryAttachmentHandler {
 
-    private static final String ID = "NEST_LOCATIONS";
+    private static final String ID = "ENTRY_LOCATIONS";
 
     private static final byte NAME = 0;
     private static final byte RELATIVE_TO = 1;
@@ -59,13 +59,13 @@ public class NestLocationsAttachmentHandler implements NestAttachmentHandler {
             while (type != null) {
                 switch (type) {
                     case NAME:
-                        System.out.println("NestAttachment.read nest location name " + byteArray.readUTF());
+                        System.out.println("EntryAttachment.read nest location name " + byteArray.readUTF());
                         break;
                     case RELATIVE_TO:
-                        System.out.println("NestAttachment.read nest location relative-to " + byteArray.readUTF());
+                        System.out.println("EntryAttachment.read nest location relative-to " + byteArray.readUTF());
                         break;
                     case PATH:
-                        System.out.println("NestAttachment.read nest location path " + byteArray.readUTF());
+                        System.out.println("EntryAttachment.read nest location path " + byteArray.readUTF());
                         break;
                     default:
                         throw new NestException("Unexpected nest location property type code " + type);
@@ -80,39 +80,26 @@ public class NestLocationsAttachmentHandler implements NestAttachmentHandler {
     }
 
     @Override
-    public byte[] toByteArray(NestBuildContext ctx) throws NestException {
+    public byte[] toByteArray(NestBuildContext ctx, NestEntrySource entry) throws NestException {
 
-        final Collection<String> nestNames = ctx.getNestLocationNames();
-        if (nestNames.isEmpty()) {
-            return null;
-        }
-
+        final EntryLocation nestLocation = entry.getNestEntry().getNestLocation();
         final DataToByteArray data = DataToByteArray.create();
         final byte[] bytes;
-
         try {
-            for (String nestName : nestNames) {
-                final EntryLocation location = ctx.getNestLocation(nestName);
-                try {
-                    if(location.getName() == null) {
-                        throw new NestException("Nest location is missing name");
-                    }
-
-                    data.writeByte(NAME).writeUTF(location.getName());
-                    System.out.println("NestAttachment.write nest location name " + location.getName());
-
-                    if (location.getRelativeTo() != null) {
-                        data.writeByte(RELATIVE_TO).writeUTF(location.getRelativeTo());
-                        System.out.println("    relative-to " + location.getRelativeTo());
-                    }
-                    if (location.getPath() != null) {
-                        data.writeByte(PATH).writeUTF(location.getPath());
-                        System.out.println("    path " + location.getPath());
-                    }
-                } catch (IOException e) {
-                    throw new NestException("Failed to write nest location " + location, e);
+            if (nestLocation.getName() != null) {
+                data.writeByte(NAME).writeUTF(nestLocation.getName());
+                System.out.println("EntryAttachment.write location name " + nestLocation.getName());
+            }
+            if (nestLocation.getRelativeTo() != null) {
+                data.writeByte(RELATIVE_TO).writeUTF(nestLocation.getRelativeTo());
+                System.out.println("EntryAttachment.write relative-to " + nestLocation.getRelativeTo());
+                if (nestLocation.getPath() != null) {
+                    data.writeByte(PATH).writeUTF(nestLocation.getPath());
+                    System.out.println("EntryAttachment.write path " + nestLocation.getPath());
                 }
             }
+        } catch (IOException e) {
+            throw new NestException("Failed to write nest location " + nestLocation, e);
         } finally {
             bytes = data.close();
         }

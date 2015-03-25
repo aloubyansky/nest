@@ -45,12 +45,12 @@ public class DataToByteArray {
     }
 
     public DataToByteArray writeByte(byte b) throws IOException {
-        dos.writeByte(b);
+        getOut().writeByte(b);
         return this;
     }
 
     public DataToByteArray writeUTF(String str) throws IOException {
-        dos.writeUTF(str);
+        getOut().writeUTF(str);
         return this;
     }
 

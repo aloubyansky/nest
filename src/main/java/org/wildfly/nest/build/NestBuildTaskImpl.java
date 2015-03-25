@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.wildfly.nest.EntryLocation;
 import org.wildfly.nest.NestException;
+import org.wildfly.nest.util.ZipUtils;
 import org.wildfly.nest.zip.build.ZipNestBuilder;
 
 /**
@@ -168,7 +169,47 @@ class NestBuildTaskImpl implements NestBuildTask, NestBuildContext {
         }
         nestFile = new File(dir, name);
 
-        return ZipNestBuilder.init().build(this);
+        return new ZipNestBuilder().build(this);
+    }
+
+    @Override
+    public String resolveSourcePath(EntryLocation sourceLocation) throws NestException {
+        if(sourceLocation == null) {
+            throw new IllegalArgumentException("sourceLocation is null");
+        }
+        return resolvePath(sourceLocation, sourceLocations, File.separator);
+    }
+
+    @Override
+    public String resolveNestPath(EntryLocation nestLocation) throws NestException {
+        if(nestLocation == null) {
+            throw new IllegalArgumentException("nestLocation is null");
+        }
+        return resolvePath(nestLocation, nestLocations, ZipUtils.ENTRY_SEPARATOR);
+    }
+
+    private String resolvePath(EntryLocation location, Map<String, EntryLocation> locations, String separator) throws NestException {
+        if(location == EntryLocation.DEFAULT) {
+            return null;
+        }
+
+        final String relativeToName = location.getRelativeTo();
+        if(relativeToName == null) {
+            return location.getPath();
+        }
+
+        final EntryLocation relativeToLocation = locations.get(relativeToName);
+        if(relativeToLocation == null) {
+            throw new NestException("Missing location definition for " + relativeToName);
+        }
+        final String resolved = resolvePath(relativeToLocation, locations, separator);
+        if(resolved == null) {
+            return location.getPath();
+        }
+        if(location.getPath() == null) {
+            return resolved;
+        }
+        return resolved + separator + location.getPath();
     }
 
     private EntryLocation assertSourceLocation(String name) {

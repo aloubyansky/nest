@@ -20,17 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.nest.build;
-
-import java.io.OutputStream;
+package org.wildfly.nest.zip;
 
 import org.wildfly.nest.NestException;
+import org.wildfly.nest.build.NestBuildContext;
+import org.wildfly.nest.expand.NestExpandContext;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface EntryWriter<T extends OutputStream> {
+public interface NestAttachmentHandler {
 
-    void write(EntryBuildContext<T> ctx) throws NestException;
+    String getId();
+
+    void fromByteArray(NestExpandContext ctx, byte[] bytes) throws NestException;
+
+    byte[] toByteArray(NestBuildContext ctx) throws NestException;
 }

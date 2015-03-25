@@ -26,92 +26,112 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.wildfly.nest.NestException;
-import org.wildfly.nest.common.EntryProcessorChain;
-import org.wildfly.nest.expand.EntryExpandContext;
-import org.wildfly.nest.expand.EntryExpander;
+import org.wildfly.nest.expand.AbstractNestExpander;
 import org.wildfly.nest.expand.NestExpandContext;
-import org.wildfly.nest.expand.NestExpander;
 import org.wildfly.nest.util.IoUtils;
+import org.wildfly.nest.util.ZipUtils;
 
 /**
- *
  * @author Alexey Loubyansky
+ *
  */
-public class ZipNestExpander implements NestExpander {
+public class ZipNestExpander extends AbstractNestExpander<ZipEntry> {
 
-    public static ZipNestExpander init() {
-        return new ZipNestExpander();
-    }
+    private ZipFile zipFile;
 
-    private final EntryProcessorChain<ZipEntryExpander> chain;
-
-    private ZipNestExpander() {
-        chain = EntryProcessorChain.<ZipEntryExpander>create().add(new ZipEntryExpander()).done();
+    @Override
+    protected void prepareToExpand(NestExpandContext ctx) throws NestException {
+        try {
+            zipFile = new ZipFile(ctx.getNestFile());
+        } catch (IOException e) {
+            throw new NestException("Failed to open nest file " + ctx.getNestFile().getAbsolutePath(), e);
+        }
     }
 
     @Override
-    public void expand(NestExpandContext ctx) throws NestException {
-
-        final File nestFile = ctx.getNestFile();
-        assert nestFile != null : "nest file is null";
-
-        ZipFile zipFile = null;
-        try {
-            zipFile = new ZipFile(nestFile);
-            final ZipEntryExpandContext entryCtx = new ZipEntryExpandContext(ctx, zipFile);
-
-            final Enumeration<? extends ZipEntry> entries = zipFile.entries();
-            while(entries.hasMoreElements()) {
-                entryCtx.entry = entries.nextElement();
-                for(EntryExpander<ZipEntry> entryExpander : chain) {
-                    entryExpander.process(entryCtx);
-                }
-            }
-        } catch (IOException e) {
-            throw new NestException("Failed to expand " + nestFile.getAbsolutePath(), e);
-        } finally {
-            if(zipFile != null) {
-                IoUtils.safeClose(zipFile);
-            }
-        }
-
-
+    protected void tidyUpAfterExpand(NestExpandContext ctx) throws NestException {
+        IoUtils.safeClose(zipFile);
     }
 
-    private static final class ZipEntryExpandContext implements EntryExpandContext<ZipEntry> {
+    @Override
+    protected byte[] getNestAttachments(NestExpandContext ctx) throws NestException {
+        final ZipEntry root = zipFile.getEntry(ZipUtils.ROOT_ENTRY_NAME);
+        return root == null ? null : root.getExtra();
+    }
 
-        final NestExpandContext ctx;
-        final ZipFile zipFile;
-        ZipEntry entry;
+    @Override
+    protected Iterable<ZipEntry> getEntries() throws NestException {
+        return new Iterable<ZipEntry>(){
+            @Override
+            public Iterator<ZipEntry> iterator() {
+                return new Iterator<ZipEntry>() {
 
-        ZipEntryExpandContext(NestExpandContext ctx, ZipFile zipFile) {
-            assert ctx != null : "nest expand context is null";
-            assert zipFile != null : "zip file is null";
-            this.ctx = ctx;
-            this.zipFile = zipFile;
-        }
+                    final Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                    boolean checkForNestRoot = zipFile.getEntry(ZipUtils.ROOT_ENTRY_NAME) != null;
+                    ZipEntry next;
 
-        @Override
-        public NestExpandContext getNestExpandContext() {
-            return ctx;
-        }
+                    @Override
+                    public boolean hasNext() {
+                        if(checkForNestRoot) {
+                            if(entries.hasMoreElements()) {
+                                next = entries.nextElement();
+                                if(ZipUtils.ROOT_ENTRY_NAME.equals(next.getName())) {
+                                    checkForNestRoot = false;
+                                    next = null;
+                                }
+                            }
+                        }
+                        return entries.hasMoreElements();
+                    }
 
-        @Override
-        public ZipEntry getEntry() {
-            return entry;
-        }
+                    @Override
+                    public ZipEntry next() {
+                        if(next != null) {
+                            final ZipEntry tmp = next;
+                            next = null;
+                            hasNext();
+                            return tmp;
+                        }
+                        return entries.nextElement();
+                    }
 
-        @Override
-        public InputStream getEntryInputStream() throws NestException {
-            try {
-                return zipFile.getInputStream(entry);
-            } catch (IOException e) {
-                throw new NestException("Failed to open input stream for entry " + entry.getName(), e);
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
             }
+        };
+    }
+
+    @Override
+    protected void expandEntry(NestExpandContext ctx, ZipEntry entry) throws NestException {
+
+        final String nestPath = entry.getName();
+        final File expandPath = ctx.resolveExpandPath(nestPath);
+        //System.out.println("expanding " + nestPath + " to " + expandPath.getAbsolutePath());
+        if (entry.isDirectory()) {
+            expandPath.mkdirs();
+            return;
         }
+
+        if (!expandPath.getParentFile().exists()) {
+            expandPath.getParentFile().mkdirs();
+        }
+        InputStream eis = null;
+        try {
+            eis = zipFile.getInputStream(entry);
+            IoUtils.copy(eis, expandPath);
+        } catch (IOException e) {
+            throw new NestException("Failed to expand entry " + entry.getName(), e);
+        } finally {
+            IoUtils.safeClose(eis);
+        }
+
     }
 }
